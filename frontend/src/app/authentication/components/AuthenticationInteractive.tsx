@@ -6,7 +6,7 @@ import AuthTabs from './AuthTabs';
 import LoginForm from './LoginForm';
 import RegisterForm from './RegisterForm';
 import SocialLogin from './SocialLogin';
-import TrustIndicators from './TrustIndicators';
+import TrustIndicators from './TrustIndicators.tsx';
 import TestimonialCard from './TestimonialCard';
 
 interface LoginFormData {

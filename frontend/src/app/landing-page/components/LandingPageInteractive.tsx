@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import HeroSection from './HeroSection';
 import FeaturesGrid from './FeaturesGrid';
-import HowItWorksTimeline from './HowItWorksTimeline';
+import HowItWorksTimeline from './HowitWorksTimeline';
 import LiveDemoSection from './LiveDemoSection';
 import TestimonialCarousel from './TestimonialCarousel';
 import TrustSignals from './TrustSignals';

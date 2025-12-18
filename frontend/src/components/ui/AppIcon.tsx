@@ -1,3 +1,4 @@
+// src/components/ui/AppIcon.tsx
 'use client';
 
 import React from 'react';
@@ -7,17 +8,16 @@ import { QuestionMarkCircleIcon } from '@heroicons/react/24/outline';
 
 type IconVariant = 'outline' | 'solid';
 
-interface IconProps {
-    name: string; // Changed to string to accept dynamic values
+interface AppIconProps extends React.SVGProps<SVGSVGElement> {
+    name: string; // This will be typed by the AppIcon.d.ts
     variant?: IconVariant;
     size?: number;
     className?: string;
     onClick?: () => void;
     disabled?: boolean;
-    [key: string]: any;
 }
 
-function Icon({
+const AppIcon = React.forwardRef<SVGSVGElement, AppIconProps>(({
     name,
     variant = 'outline',
     size = 24,
@@ -25,31 +25,37 @@ function Icon({
     onClick,
     disabled = false,
     ...props
-}: IconProps) {
+}, ref) => {
     const iconSet = variant === 'solid' ? HeroIconsSolid : HeroIcons;
     const IconComponent = iconSet[name as keyof typeof iconSet] as React.ComponentType<any>;
 
     if (!IconComponent) {
+        const { ref: _, ...restProps } = props;
         return (
             <QuestionMarkCircleIcon
+                ref={ref}
                 width={size}
                 height={size}
                 className={`text-gray-400 ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${className}`}
                 onClick={disabled ? undefined : onClick}
-                {...props}
+                {...restProps}
             />
         );
     }
 
+    const { ref: _, ...restProps } = props;
     return (
         <IconComponent
+            ref={ref}
             width={size}
             height={size}
             className={`${disabled ? 'opacity-50 cursor-not-allowed' : onClick ? 'cursor-pointer hover:opacity-80' : ''} ${className}`}
             onClick={disabled ? undefined : onClick}
-            {...props}
+            {...restProps}
         />
     );
-}
+});
 
-export default Icon; 
+AppIcon.displayName = 'AppIcon';
+
+export default AppIcon;
