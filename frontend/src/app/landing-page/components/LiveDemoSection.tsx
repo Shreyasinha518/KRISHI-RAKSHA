@@ -49,7 +49,7 @@ const LiveDemoSection = () => {
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-heading font-bold text-foreground mb-4">
             See{' '}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">
-              AgriInsure Predict
+              KRISHI RAKSHA
             </span>
             {' '}in Action
           </h2>

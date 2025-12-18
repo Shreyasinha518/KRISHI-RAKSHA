@@ -89,7 +89,7 @@ const Header = ({
               <circle cx="20" cy="32" r="2" fill="currentColor" className="text-accent" />
             </svg>
             <span className="text-xl font-heading font-bold text-foreground hidden sm:block">
-              AgriInsure Predict
+              KRISHI RAKSHA
             </span>
           </Link>
 

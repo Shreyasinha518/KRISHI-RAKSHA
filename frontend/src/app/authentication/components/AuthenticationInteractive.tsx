@@ -24,6 +24,12 @@ interface RegisterFormData {
   landArea: string;
   primaryCrop: string;
   termsAccepted: boolean;
+  // Bank details
+  bankName?: string;
+  accountHolderName?: string;
+  ifscCode?: string;
+  accountType?: 'savings' | 'current' | '';
+  aadhaarNumber?: string;
 }
 
 interface Testimonial {
@@ -135,7 +141,7 @@ const AuthenticationInteractive = () => {
           <div className="bg-card rounded-2xl shadow-card p-6 sm:p-8">
             <div className="mb-6">
               <h1 className="text-3xl font-heading font-bold text-foreground mb-2">
-                Welcome to AgriInsure Predict
+                Welcome to KRISHI RAKSHA
               </h1>
               <p className="text-base font-body text-text-secondary">
                 Secure your harvest with AI-powered insurance

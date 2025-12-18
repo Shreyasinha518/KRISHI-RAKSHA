@@ -9,7 +9,7 @@ export default function ContactSection() {
           Ready to Protect Your Harvest?
         </h2>
         <p className="text-lg text-white/90 max-w-2xl mx-auto mb-8">
-          Join 2,50,000+ farmers across India who trust AgriInsure Predict for their crop insurance needs
+          Join 2,50,000+ farmers across India who trust KRISHI RAKSHA for their crop insurance needs
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4 mb-8">
