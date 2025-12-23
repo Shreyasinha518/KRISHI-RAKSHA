@@ -33,7 +33,7 @@ export default function SuccessStoriesSection() {
     location: 'Vidarbha',
     state: 'Maharashtra',
     crop: 'Cotton',
-    testimonial: 'AgriInsure Predict helped me increase my cotton yield by 40%. The AI predictions warned me about pest attacks early, and the instant payout during drought saved my family.',
+    testimonial: 'KRISHI RAKSHA helped me increase my cotton yield by 40%. The AI predictions warned me about pest attacks early, and the instant payout during drought saved my family.',
     testimonialHindi: 'एग्रीइंश्योर प्रेडिक्ट ने मेरी कपास की उपज 40% बढ़ाने में मदद की। AI भविष्यवाणियों ने मुझे कीट हमलों के बारे में जल्दी चेतावनी दी, और सूखे के दौरान तत्काल भुगतान ने मेरे परिवार को बचाया।',
     improvement: '40% yield increase',
     image: "https://img.rocket.new/generatedImages/rocket_gen_img_127142f62-1763299279133.png",

@@ -31,7 +31,7 @@ const TestimonialCarousel = () => {
     image: "https://img.rocket.new/generatedImages/rocket_gen_img_1f60bb51a-1765227581862.png",
     alt: 'Middle-aged Indian farmer in white shirt standing in green wheat field with blue sky',
     rating: 5,
-    quote: 'AgriInsure Predict helped me get insurance payout within 2 days when unexpected rains damaged my cotton crop. The AI prediction was accurate and the blockchain verification made the process transparent.',
+    quote: 'KRISHI RAKSHA helped me get insurance payout within 2 days when unexpected rains damaged my cotton crop. The AI prediction was accurate and the blockchain verification made the process transparent.',
     cropType: 'Cotton'
   },
   {
@@ -122,7 +122,7 @@ const TestimonialCarousel = () => {
             </span>
           </h2>
           <p className="text-lg text-text-secondary font-body max-w-3xl mx-auto">
-            Real success stories from farmers across India who secured their harvest with AgriInsure Predict
+            Real success stories from farmers across India who secured their harvest with KRISHI RAKSHA
           </p>
         </div>
 

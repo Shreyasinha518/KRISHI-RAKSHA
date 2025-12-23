@@ -59,7 +59,7 @@ const Footer = () => {
                 <circle cx="20" cy="32" r="2" fill="currentColor" className="text-accent" />
               </svg>
               <span className="text-xl font-heading font-bold text-foreground">
-                AgriInsure Predict
+                KRISHI RAKSHA
               </span>
             </Link>
             <p className="text-sm text-text-secondary font-body mb-4 max-w-xs">
@@ -147,7 +147,7 @@ const Footer = () => {
         <div className="pt-8 border-t border-border">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <p className="text-sm text-text-secondary font-body text-center sm:text-left">
-              &copy; {currentYear} AgriInsure Predict. All rights reserved.
+              &copy; {currentYear} KRISHI RAKSHA. All rights reserved.
             </p>
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">

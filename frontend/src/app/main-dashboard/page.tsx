@@ -4,7 +4,7 @@ import NavigationBreadcrumb from '@/components/common/NavigationBreadcrumb';
 import DashboardInteractive from './components/DashboardInteractive';
 
 export const metadata: Metadata = {
-  title: 'Main Dashboard - AgriInsure Predict',
+  title: 'Main Dashboard - KRISHI RAKSHA',
   description: 'Comprehensive agricultural insurance dashboard with AI-powered yield predictions, fraud detection analytics, and real-time farm monitoring for Indian farmers.',
 };
 

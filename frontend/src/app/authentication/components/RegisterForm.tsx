@@ -16,8 +16,18 @@ interface RegisterFormData {
   confirmPassword: string;
   farmLocation: string;
   landArea: string;
+  landAreaValue: string;
+  landAreaUnit: string;
   primaryCrop: string;
   termsAccepted: boolean;
+  bankName: string;
+  accountHolderName: string;
+  ifscCode: string;
+  accountNumber: string;
+  upiId: string;
+  bankMobile: string;
+  accountType: 'savings' | 'current' | '';
+  aadhaarNumber: string;
 }
 
 interface FormErrors {
@@ -33,8 +43,18 @@ const RegisterForm = ({ onSubmit, isLoading }: RegisterFormProps) => {
     confirmPassword: '',
     farmLocation: '',
     landArea: '',
+    landAreaValue: '',
+    landAreaUnit: '',
     primaryCrop: '',
     termsAccepted: false,
+    bankName: '',
+    accountHolderName: '',
+    ifscCode: '',
+    accountNumber: '',
+    upiId: '',
+    bankMobile: '',
+    accountType: '',
+    aadhaarNumber: '',
   });
   const [errors, setErrors] = useState<FormErrors>({});
   const [showPassword, setShowPassword] = useState(false);
@@ -107,14 +127,43 @@ const RegisterForm = ({ onSubmit, isLoading }: RegisterFormProps) => {
       newErrors.farmLocation = 'Farm location is required';
     }
 
-    if (!formData.landArea) {
-      newErrors.landArea = 'Land area is required';
-    } else if (isNaN(Number(formData.landArea)) || Number(formData.landArea) <= 0) {
-      newErrors.landArea = 'Enter valid land area';
+    if (!formData.landAreaValue) {
+      newErrors.landAreaValue = 'Land area value is required';
+    } else if (isNaN(Number(formData.landAreaValue)) || Number(formData.landAreaValue) <= 0) {
+      newErrors.landAreaValue = 'Enter valid land area value';
+    }
+
+    if (!formData.landAreaUnit) {
+      newErrors.landAreaUnit = 'Land area unit is required';
     }
 
     if (!formData.primaryCrop) {
       newErrors.primaryCrop = 'Primary crop is required';
+    }
+    
+    // Bank details validation
+    if (!formData.bankName || !formData.bankName.trim()) {
+      newErrors.bankName = 'Bank name is required';
+    }
+
+    if (!formData.accountHolderName || !formData.accountHolderName.trim()) {
+      newErrors.accountHolderName = 'Account holder name is required';
+    }
+
+    if (!formData.ifscCode) {
+      newErrors.ifscCode = 'IFSC code is required';
+    } else if (!/^[A-Za-z]{4}0[A-Za-z0-9]{6}$/.test(formData.ifscCode)) {
+      newErrors.ifscCode = 'Enter valid IFSC code';
+    }
+
+    if (!formData.accountType) {
+      newErrors.accountType = 'Account type is required';
+    }
+
+    if (!formData.aadhaarNumber) {
+      newErrors.aadhaarNumber = 'Aadhaar number is required';
+    } else if (!/^\d{12}$/.test(formData.aadhaarNumber)) {
+      newErrors.aadhaarNumber = 'Enter valid 12-digit Aadhaar number';
     }
 
     if (!formData.termsAccepted) {
@@ -128,7 +177,11 @@ const RegisterForm = ({ onSubmit, isLoading }: RegisterFormProps) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (validateForm()) {
-      onSubmit(formData);
+      const payload = {
+        ...formData,
+        landArea: `${formData.landAreaValue} ${formData.landAreaUnit}`,
+      } as RegisterFormData;
+      onSubmit(payload);
     }
   };
 
@@ -292,23 +345,51 @@ const RegisterForm = ({ onSubmit, isLoading }: RegisterFormProps) => {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label htmlFor="landArea" className="block text-sm font-body font-medium text-foreground mb-2">
-            Land Area (Acres)
+          <label htmlFor="landAreaValue" className="block text-sm font-body font-medium text-foreground mb-2">
+            Land Area Value
           </label>
           <input
-            id="landArea"
+            id="landAreaValue"
             type="number"
             step="0.1"
-            value={formData.landArea}
-            onChange={(e) => handleChange('landArea', e.target.value)}
+            value={formData.landAreaValue}
+            onChange={(e) => handleChange('landAreaValue', e.target.value)}
             className={`w-full px-4 py-3 border rounded-lg font-body text-base focus:outline-none focus:ring-2 focus:ring-primary transition-all duration-200 ${
-              errors.landArea ? 'border-error' : 'border-input'
+              errors.landAreaValue ? 'border-error' : 'border-input'
             }`}
-            placeholder="Enter land area"
+            placeholder="e.g., 5"
             disabled={isLoading}
           />
-          {errors.landArea && (
-            <p className="mt-1 text-sm text-error font-body">{errors.landArea}</p>
+          {errors.landAreaValue && (
+            <p className="mt-1 text-sm text-error font-body">{errors.landAreaValue}</p>
+          )}
+        </div>
+
+        <div>
+          <label htmlFor="landAreaUnit" className="block text-sm font-body font-medium text-foreground mb-2">
+            Land Area Unit
+          </label>
+          <select
+            id="landAreaUnit"
+            value={formData.landAreaUnit}
+            onChange={(e) => handleChange('landAreaUnit', e.target.value)}
+            className={`w-full px-4 py-3 border rounded-lg font-body text-base focus:outline-none focus:ring-2 focus:ring-primary transition-all duration-200 ${
+              errors.landAreaUnit ? 'border-error' : 'border-input'
+            }`}
+            disabled={isLoading}
+          >
+            <option value="">Select unit</option>
+            <option value="acre">Acre</option>
+            <option value="hectare">Hectare</option>
+            <option value="bigha">Bigha</option>
+            <option value="katha">Katha</option>
+            <option value="kanal">Kanal</option>
+            <option value="marla">Marla</option>
+            <option value="guntha">Guntha</option>
+            <option value="cent">Cent</option>
+          </select>
+          {errors.landAreaUnit && (
+            <p className="mt-1 text-sm text-error font-body">{errors.landAreaUnit}</p>
           )}
         </div>
 
@@ -335,6 +416,147 @@ const RegisterForm = ({ onSubmit, isLoading }: RegisterFormProps) => {
           {errors.primaryCrop && (
             <p className="mt-1 text-sm text-error font-body">{errors.primaryCrop}</p>
           )}
+        </div>
+      </div>
+
+      {/* Bank Details Section */}
+      <div className="pt-4 border-t border-input">
+        <h4 className="text-md font-heading font-semibold text-foreground mb-3">Bank Details</h4>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="bankName" className="block text-sm font-body font-medium text-foreground mb-2">Bank Name</label>
+            <input
+              id="bankName"
+              type="text"
+              value={formData.bankName}
+              onChange={(e) => handleChange('bankName', e.target.value)}
+              className={`w-full px-4 py-3 border rounded-lg font-body text-base focus:outline-none focus:ring-2 focus:ring-primary transition-all duration-200 ${
+                errors.bankName ? 'border-error' : 'border-input'
+              }`}
+              placeholder="e.g., State Bank of India"
+              disabled={isLoading}
+            />
+            {errors.bankName && <p className="mt-1 text-sm text-error font-body">{errors.bankName}</p>}
+          </div>
+
+          <div>
+            <label htmlFor="accountHolderName" className="block text-sm font-body font-medium text-foreground mb-2">Account Holder Name</label>
+            <input
+              id="accountHolderName"
+              type="text"
+              value={formData.accountHolderName}
+              onChange={(e) => handleChange('accountHolderName', e.target.value)}
+              className={`w-full px-4 py-3 border rounded-lg font-body text-base focus:outline-none focus:ring-2 focus:ring-primary transition-all duration-200 ${
+                errors.accountHolderName ? 'border-error' : 'border-input'
+              }`}
+              placeholder="Name as on bank account"
+              disabled={isLoading}
+            />
+            {errors.accountHolderName && <p className="mt-1 text-sm text-error font-body">{errors.accountHolderName}</p>}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+          <div>
+            <label htmlFor="ifscCode" className="block text-sm font-body font-medium text-foreground mb-2">IFSC Code</label>
+            <input
+              id="ifscCode"
+              type="text"
+              value={formData.ifscCode}
+              onChange={(e) => handleChange('ifscCode', e.target.value.toUpperCase())}
+              className={`w-full px-4 py-3 border rounded-lg font-body text-base focus:outline-none focus:ring-2 focus:ring-primary transition-all duration-200 ${
+                errors.ifscCode ? 'border-error' : 'border-input'
+              }`}
+              placeholder="AAAA0XXXXXX"
+              disabled={isLoading}
+            />
+            {errors.ifscCode && <p className="mt-1 text-sm text-error font-body">{errors.ifscCode}</p>}
+          </div>
+
+          <div>
+            <label htmlFor="accountType" className="block text-sm font-body font-medium text-foreground mb-2">Account Type</label>
+            <select
+              id="accountType"
+              value={formData.accountType}
+              onChange={(e) => handleChange('accountType', e.target.value)}
+              className={`w-full px-4 py-3 border rounded-lg font-body text-base focus:outline-none focus:ring-2 focus:ring-primary transition-all duration-200 ${
+                errors.accountType ? 'border-error' : 'border-input'
+              }`}
+              disabled={isLoading}
+            >
+              <option value="">Select type</option>
+              <option value="savings">Savings</option>
+              <option value="current">Current</option>
+            </select>
+            {errors.accountType && <p className="mt-1 text-sm text-error font-body">{errors.accountType}</p>}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+          <div>
+            <label htmlFor="accountNumber" className="block text-sm font-body font-medium text-foreground mb-2">Account Number</label>
+            <input
+              id="accountNumber"
+              type="text"
+              value={formData.accountNumber}
+              onChange={(e) => handleChange('accountNumber', e.target.value.replace(/\D/g, ''))}
+              className={`w-full px-4 py-3 border rounded-lg font-body text-base focus:outline-none focus:ring-2 focus:ring-primary transition-all duration-200 ${
+                errors.accountNumber ? 'border-error' : 'border-input'
+              }`}
+              placeholder="Enter account number"
+              disabled={isLoading}
+            />
+            {errors.accountNumber && <p className="mt-1 text-sm text-error font-body">{errors.accountNumber}</p>}
+          </div>
+
+          <div>
+            <label htmlFor="upiId" className="block text-sm font-body font-medium text-foreground mb-2">UPI ID</label>
+            <input
+              id="upiId"
+              type="text"
+              value={formData.upiId}
+              onChange={(e) => handleChange('upiId', e.target.value)}
+              className={`w-full px-4 py-3 border rounded-lg font-body text-base focus:outline-none focus:ring-2 focus:ring-primary transition-all duration-200 ${
+                errors.upiId ? 'border-error' : 'border-input'
+              }`}
+              placeholder="e.g., name@bank"
+              disabled={isLoading}
+            />
+            {errors.upiId && <p className="mt-1 text-sm text-error font-body">{errors.upiId}</p>}
+          </div>
+        </div>
+
+        <div className="mt-4">
+          <label htmlFor="bankMobile" className="block text-sm font-body font-medium text-foreground mb-2">Bank Registered Mobile</label>
+          <input
+            id="bankMobile"
+            type="tel"
+            value={formData.bankMobile}
+            onChange={(e) => handleChange('bankMobile', e.target.value.replace(/\D/g, ''))}
+            className={`w-full px-4 py-3 border rounded-lg font-body text-base focus:outline-none focus:ring-2 focus:ring-primary transition-all duration-200 ${
+              errors.bankMobile ? 'border-error' : 'border-input'
+            }`}
+            placeholder="10-digit mobile"
+            disabled={isLoading}
+          />
+          {errors.bankMobile && <p className="mt-1 text-sm text-error font-body">{errors.bankMobile}</p>}
+        </div>
+
+        <div className="mt-4">
+          <label htmlFor="aadhaarNumber" className="block text-sm font-body font-medium text-foreground mb-2">Aadhaar Number</label>
+          <input
+            id="aadhaarNumber"
+            type="text"
+            value={formData.aadhaarNumber}
+            onChange={(e) => handleChange('aadhaarNumber', e.target.value)}
+            className={`w-full px-4 py-3 border rounded-lg font-body text-base focus:outline-none focus:ring-2 focus:ring-primary transition-all duration-200 ${
+              errors.aadhaarNumber ? 'border-error' : 'border-input'
+            }`}
+            placeholder="12-digit Aadhaar"
+            disabled={isLoading}
+          />
+          {errors.aadhaarNumber && <p className="mt-1 text-sm text-error font-body">{errors.aadhaarNumber}</p>}
         </div>
       </div>
 

@@ -45,7 +45,7 @@ const CTASection = ({ onGetStarted }: CTASectionProps) => {
           </h2>
           
           <p className="text-lg sm:text-xl text-white/90 font-body mb-8 max-w-2xl mx-auto">
-            Join 12,000+ farmers who trust AgriInsure Predict for smart, transparent, and instant agricultural insurance
+            Join 12,000+ farmers who trust KRISHI RAKSHA for smart, transparent, and instant agricultural insurance
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
