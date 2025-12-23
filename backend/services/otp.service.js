@@ -1,12 +1,9 @@
-// ===================================================================
-// FILE: backend/services/otp.service.js
-// ===================================================================
-
-const OTPModel = require('../models/otp.model');
+// services/otp.supabase.service.js
+const { supabase } = require('../config/db');
 const { sendPhoneOTP } = require('../config/otp');
 const { sendVerificationEmail } = require('../config/mail');
 
-class OTPService {
+class SupabaseOTPService {
   // Generate 6-digit OTP
   static generateOTP() {
     return Math.floor(100000 + Math.random() * 900000).toString();
@@ -16,10 +13,20 @@ class OTPService {
   static async sendPhoneOTP(phone) {
     try {
       const otp = this.generateOTP();
+      const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
       
-      // Save to database
-      await OTPModel.create(phone, otp, 'phone');
-      
+      // Save to Supabase
+      const { data, error } = await supabase
+        .from('otps')
+        .insert([{
+          phone: phone,
+          otp: otp,
+          type: 'phone',
+          expires_at: expiresAt.toISOString()
+        }]);
+
+      if (error) throw error;
+
       // Send via Twilio
       await sendPhoneOTP(phone, otp);
       
@@ -34,11 +41,21 @@ class OTPService {
   static async sendEmailOTP(email) {
     try {
       const otp = this.generateOTP();
+      const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
       
-      // Save to database
-      await OTPModel.create(email, otp, 'email');
-      
-      // Send via Gmail
+      // Save to Supabase
+      const { data, error } = await supabase
+        .from('otps')
+        .insert([{
+          email: email,
+          otp: otp,
+          type: 'email',
+          expires_at: expiresAt.toISOString()
+        }]);
+
+      if (error) throw error;
+
+      // Send via email
       await sendVerificationEmail(email, otp);
       
       return { success: true, message: 'OTP sent to email' };
@@ -51,31 +68,39 @@ class OTPService {
   // Verify OTP
   static async verifyOTP(identifier, otp, type) {
     try {
-      const otpRecord = await OTPModel.findValid(identifier, otp, type);
+      const now = new Date().toISOString();
       
-      if (!otpRecord) {
+      // Find valid OTP
+      const { data, error } = await supabase
+        .from('otps')
+        .select('*')
+        .eq(type, identifier)
+        .eq('otp', otp)
+        .eq('type', type)
+        .gt('expires_at', now)
+        .eq('verified', false)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (error || !data) {
         return { success: false, error: 'Invalid or expired OTP' };
       }
-      
+
       // Mark as verified
-      await OTPModel.markAsVerified(otpRecord.id);
-      
+      const { error: updateError } = await supabase
+        .from('otps')
+        .update({ verified: true })
+        .eq('id', data.id);
+
+      if (updateError) throw updateError;
+
       return { success: true, message: 'OTP verified successfully' };
     } catch (error) {
       console.error('Verify OTP failed:', error);
       return { success: false, error: error.message };
     }
   }
-
-  // Clean expired OTPs (run periodically)
-  static async cleanExpiredOTPs() {
-    try {
-      await OTPModel.deleteExpired();
-      console.log('✅ Expired OTPs cleaned');
-    } catch (error) {
-      console.error('Clean OTPs failed:', error);
-    }
-  }
 }
 
-module.exports = OTPService;
+module.exports = SupabaseOTPService;

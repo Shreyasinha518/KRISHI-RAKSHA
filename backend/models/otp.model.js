@@ -3,12 +3,21 @@ const mongoose = require('mongoose');
 const otpSchema = new mongoose.Schema({
     email: {
         type: String,
-        required: true,
+        required: function() { return !this.phone; },
         trim: true,
         lowercase: true
     },
+    phone: {
+        type: String,
+        required: function() { return !this.email; }
+    },
     otp: {
         type: String,
+        required: true
+    },
+    type: {
+        type: String,
+        enum: ['email', 'phone'],
         required: true
     },
     expiresAt: {
@@ -30,7 +39,8 @@ const otpSchema = new mongoose.Schema({
 otpSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
 // Index for faster lookups
-// otpSchema.index({ email: 1, otp: 1 });
+otpSchema.index({ email: 1, otp: 1 });
+otpSchema.index({ phone: 1, otp: 1 });
 
 const OTP = mongoose.model('OTP', otpSchema);
 
