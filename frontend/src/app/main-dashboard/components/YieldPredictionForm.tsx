@@ -26,6 +26,8 @@ const YieldPredictionForm = ({ onSubmit, isLoading }: YieldPredictionFormProps) 
     irrigationType: '',
     fertilizerUsage: 50,
   });
+  const [landAreaValue, setLandAreaValue] = useState<string>('');
+  const [landAreaUnit, setLandAreaUnit] = useState<string>('acre');
 
   const cropTypes = [
     { value: 'rice', label: 'Rice (धान)' },
@@ -52,7 +54,11 @@ const YieldPredictionForm = ({ onSubmit, isLoading }: YieldPredictionFormProps) 
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(formData);
+    const payload = {
+      ...formData,
+      landArea: `${landAreaValue} ${landAreaUnit}`,
+    };
+    onSubmit(payload);
   };
 
   const handleInputChange = (field: keyof FormData, value: string | number) => {
@@ -89,21 +95,43 @@ const YieldPredictionForm = ({ onSubmit, isLoading }: YieldPredictionFormProps) 
         </div>
 
         {/* Land Area */}
-        <div>
-          <label htmlFor="landArea" className="block text-sm font-body font-medium text-foreground mb-2">
-            Land Area (Acres) <span className="text-error">*</span>
-          </label>
-          <input
-            type="number"
-            id="landArea"
-            value={formData.landArea}
-            onChange={(e) => handleInputChange('landArea', e.target.value)}
-            placeholder="Enter land area"
-            min="0.1"
-            step="0.1"
-            required
-            className="w-full px-4 py-2.5 bg-background border border-input rounded-md text-foreground font-body focus:outline-none focus:ring-2 focus:ring-ring transition-all duration-200"
-          />
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label htmlFor="landAreaValue" className="block text-sm font-body font-medium text-foreground mb-2">
+              Land Area <span className="text-error">*</span>
+            </label>
+            <input
+              type="number"
+              id="landAreaValue"
+              value={landAreaValue}
+              onChange={(e) => setLandAreaValue(e.target.value)}
+              placeholder="e.g., 5"
+              min="0.1"
+              step="0.1"
+              required
+              className="w-full px-4 py-2.5 bg-background border border-input rounded-md text-foreground font-body focus:outline-none focus:ring-2 focus:ring-ring transition-all duration-200"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="landAreaUnit" className="block text-sm font-body font-medium text-foreground mb-2 opacity-0">Unit</label>
+            <select
+              id="landAreaUnit"
+              value={landAreaUnit}
+              onChange={(e) => setLandAreaUnit(e.target.value)}
+              required
+              className="w-full px-4 py-2.5 bg-background border border-input rounded-md text-foreground font-body focus:outline-none focus:ring-2 focus:ring-ring transition-all duration-200"
+            >
+              <option value="acre">Acre</option>
+              <option value="hectare">Hectare</option>
+              <option value="bigha">Bigha</option>
+              <option value="katha">Katha</option>
+              <option value="kanal">Kanal</option>
+              <option value="marla">Marla</option>
+              <option value="guntha">Guntha</option>
+              <option value="cent">Cent</option>
+            </select>
+          </div>
         </div>
 
         {/* Sowing Date */}
