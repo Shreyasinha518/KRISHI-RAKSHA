@@ -1,4 +1,8 @@
-// backend/routes/blockchain.routes.js
+// ===================================================================
+// FILE: backend/routes/blockchain.routes.js
+// KEEP YOUR EXISTING FILE, IT'S ALREADY GOOD
+// ===================================================================
+
 const express = require('express');
 const router = express.Router();
 const blockchainService = require('../services/blockchain.service');

@@ -1,86 +1,95 @@
-// backend/server.js
+// ===================================================================
+// FILE: backend/server.js
+// Server Entry Point
+// REPLACE YOUR EXISTING FILE WITH THIS
+// ===================================================================
+
 require('dotenv').config();
-const http = require('http');
-const express = require('express');
 const app = require('./app');
+const { testConnection } = require('./config/db');
+const blockchainService = require('./services/blockchain.service');
+const OTPService = require('./services/otp.service');
 
-// Import and use routes conditionally
-const loadRoute = (path, routePath) => {
+const PORT = process.env.PORT || 5000;
+
+// Initialize services
+async function initializeServices() {
   try {
-    const route = require(routePath);
-    if (route && typeof route === 'function') {
-      app.use(path, route);
-      console.log(`✅ Route loaded: ${path}`);
-      return true;
-    }
-  } catch (error) {
-    console.warn(`⚠️  Route not available: ${path} (${error.message})`);
-  }
-  return false;
-};
-
-// Load routes
-const routes = [
-  { path: '/api/auth', file: './routes/auth.routes' },
-  { path: '/api/farmers', file: './routes/farmer.routes' },
-  { path: '/api/claims', file: './routes/claim.routes' },
-  { path: '/api', file: './routes/blockchain.routes' }
-];
-
-// Initialize all routes
-routes.forEach(route => loadRoute(route.path, route.file));
-
-// Initialize blockchain service if available
-try {
-  const blockchainService = require('./services/blockchain.service');
-  if (blockchainService && typeof blockchainService.initialize === 'function') {
+    // Test database connection
+    await testConnection();
+    
+    // Initialize blockchain service
     blockchainService.initialize();
-    console.log('⛓️  Blockchain service initialized');
+    
+    // Setup blockchain event listeners
+    // blockchainService.setupEventListeners(); // Uncomment if you add this method
+    
+    // Clean expired OTPs periodically (every 1 hour)
+    setInterval(() => {
+      OTPService.cleanExpiredOTPs();
+    }, 60 * 60 * 1000);
+    
+    console.log('✅ All services initialized');
+  } catch (error) {
+    console.error('❌ Service initialization failed:', error);
+    process.exit(1);
   }
-} catch (error) {
-  console.warn('⚠️  Blockchain service not available:', error.message);
 }
 
-// Get port from environment and store in Express.
-const port = process.env.PORT || 5000;
-app.set('port', port);
+// Start server
+async function startServer() {
+  await initializeServices();
+  
+  app.listen(PORT, () => {
+    console.log('');
+    console.log('╔═══════════════════════════════════════╗');
+    console.log('║   KRISHI RAKSHA API SERVER RUNNING    ║');
+    console.log('╚═══════════════════════════════════════╝');
+    console.log('');
+    console.log(`🚀 Server:         http://localhost:${PORT}`);
+    console.log(`📡 API Endpoint:   http://localhost:${PORT}/api`);
+    console.log(`❤️  Health Check:  http://localhost:${PORT}/health`);
+    console.log(`⛓️  Blockchain:     Connected to Celo Alfajores`);
+    console.log(`📦 Database:       Connected to Supabase`);
+    console.log('');
+    console.log('Available Routes:');
+    console.log('  POST /api/auth/send-phone-otp');
+    console.log('  POST /api/auth/verify-phone-otp');
+    console.log('  POST /api/auth/send-email-otp');
+    console.log('  POST /api/auth/verify-email-otp');
+    console.log('  POST /api/auth/register');
+    console.log('  POST /api/auth/login');
+    console.log('  GET  /api/auth/me');
+    console.log('  GET  /api/farmers/dashboard');
+    console.log('  POST /api/claims');
+    console.log('  GET  /api/claims');
+    console.log('  GET  /api/blockchain/claim/:claimId');
+    console.log('');
+  });
+}
 
-// Create HTTP server.
-const server = http.createServer(app);
+// Handle uncaught exceptions
+process.on('uncaughtException', (error) => {
+  console.error('❌ Uncaught Exception:', error);
+  process.exit(1);
+});
 
-// Event listener for HTTP server "error" event.
-const onError = (error) => {
-  if (error.syscall !== 'listen') {
-    throw error;
-  }
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (error) => {
+  console.error('❌ Unhandled Rejection:', error);
+  process.exit(1);
+});
 
-  const bind = typeof port === 'string' ? 'Pipe ' + port : 'Port ' + port;
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('SIGTERM received, shutting down gracefully...');
+  process.exit(0);
+});
 
-  // Handle specific listen errors with friendly messages
-  switch (error.code) {
-    case 'EACCES':
-      console.error(bind + ' requires elevated privileges');
-      process.exit(1);
-      break;
-    case 'EADDRINUSE':
-      console.error(bind + ' is already in use');
-      process.exit(1);
-      break;
-    default:
-      throw error;
-  }
-};
+process.on('SIGINT', () => {
+  console.log('\nSIGINT received, shutting down gracefully...');
+  process.exit(0);
+});
 
-// Event listener for HTTP server "listening" event.
-const onListening = () => {
-  const addr = server.address();
-  const bind = typeof addr === 'string' ? 'pipe ' + addr : 'port ' + addr.port;
-  console.log(`\n🚀 Server running on port ${bind}`);
-  console.log(`🌐 Access the API at http://localhost:${port}/api`);
-  console.log(`🔍 Health check: http://localhost:${port}/health`);
-};
-
-// Listen on provided port, on all network interfaces.
-server.listen(port);
-server.on('error', onError);
-server.on('listening', onListening);
+// Start the server
+startServer();

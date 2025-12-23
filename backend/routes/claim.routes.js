@@ -1,22 +1,34 @@
-// backend/routes/claim.routes.js
+// ===================================================================
+// FILE: backend/routes/claim.routes.js
+// REPLACE YOUR EXISTING FILE WITH THIS
+// ===================================================================
+
 const express = require('express');
 const router = express.Router();
+const claimController = require('../controllers/claim.controller');
+const { verifyToken, requirePhoneVerified, requireEmailVerified } = require('../middleware/auth.middleware');
+const { uploadMultiple, handleUploadError } = require('../middleware/upload.middleware');
+const { validateClaim } = require('../middleware/validation.middleware');
 
-// Placeholder routes - implement actual claim logic as needed
-router.get('/', (req, res) => {
-  res.json({ message: 'Get all claims endpoint' });
-});
+// Submit new claim (protected, with file upload)
+router.post(
+  '/',
+  verifyToken,
+  requirePhoneVerified,
+  requireEmailVerified,
+  uploadMultiple,
+  handleUploadError,
+  validateClaim,
+  claimController.submitClaim
+);
 
-router.get('/:id', (req, res) => {
-  res.json({ message: `Get claim with ID: ${req.params.id}` });
-});
+// Get all claims for current farmer (protected)
+router.get('/', verifyToken, claimController.getMyClaims);
 
-router.post('/', (req, res) => {
-  res.status(201).json({ message: 'Create new claim' });
-});
+// Get claim by ID (protected)
+router.get('/:id', verifyToken, claimController.getClaimById);
 
-router.put('/:id/approve', (req, res) => {
-  res.json({ message: `Approve claim with ID: ${req.params.id}` });
-});
+// Process claim with ML (admin/system route)
+router.post('/:id/process', claimController.processClaim);
 
 module.exports = router;

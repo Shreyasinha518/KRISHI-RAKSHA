@@ -1,18 +1,20 @@
-// backend/routes/farmer.routes.js
+// ===================================================================
+// FILE: backend/routes/farmer.routes.js
+// REPLACE YOUR EXISTING FILE WITH THIS
+// ===================================================================
+
 const express = require('express');
 const router = express.Router();
+const farmerController = require('../controllers/farmer.controller');
+const { verifyToken } = require('../middleware/auth.middleware');
 
-// Placeholder routes - implement actual farmer logic as needed
-router.get('/', (req, res) => {
-  res.json({ message: 'Get all farmers endpoint' });
-});
+// Get farmer dashboard (protected)
+router.get('/dashboard', verifyToken, farmerController.getDashboard);
 
-router.get('/:id', (req, res) => {
-  res.json({ message: `Get farmer with ID: ${req.params.id}` });
-});
+// Update profile (protected)
+router.put('/profile', verifyToken, farmerController.updateProfile);
 
-router.post('/', (req, res) => {
-  res.status(201).json({ message: 'Create new farmer' });
-});
+// Get farmer by ID (protected)
+router.get('/:id', verifyToken, farmerController.getFarmerById);
 
 module.exports = router;
