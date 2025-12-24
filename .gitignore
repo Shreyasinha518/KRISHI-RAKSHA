@@ -33,3 +33,30 @@ yarn-error.log*
 
 # Local development
 .env
+
+
+
+# =========================
+# Python / ML
+# =========================
+
+# Virtual environments
+venv/
+ml/venv/
+.env/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Jupyter
+.ipynb_checkpoints/
+
+# ML artifacts (optional but recommended)
+*.h5
+*.pkl
+*.joblib
+*.pt
+*.onnx
+
