@@ -1,47 +1,71 @@
-const mongoose = require('mongoose');
+// ===================================================================
+// FILE: backend/models/otp.model.js
+// ===================================================================
 
-const otpSchema = new mongoose.Schema({
-    email: {
-        type: String,
-        required: function() { return !this.phone; },
-        trim: true,
-        lowercase: true
-    },
-    phone: {
-        type: String,
-        required: function() { return !this.email; }
-    },
-    otp: {
-        type: String,
-        required: true
-    },
-    type: {
-        type: String,
-        enum: ['email', 'phone'],
-        required: true
-    },
-    expiresAt: {
-        type: Date,
-        required: true,
-        default: () => new Date(+new Date() + 10 * 60 * 1000) // 10 minutes from now
-    },
-    verified: {
-        type: Boolean,
-        default: false
-    },
-    createdAt: {
-        type: Date,
-        default: Date.now
-    }
-});
+const { supabase } = require('../config/db');
 
-// Index for TTL (auto-delete expired OTPs)
-otpSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
+class OTPModel {
+  // Create OTP
+  static async create(identifier, otp, type) {
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
-// Index for faster lookups
-otpSchema.index({ email: 1, otp: 1 });
-otpSchema.index({ phone: 1, otp: 1 });
+    const { data, error } = await supabase
+      .from('otp_verifications')
+      .insert([
+        {
+          identifier,
+          otp,
+          type,
+          expires_at: expiresAt.toISOString(),
+        },
+      ])
+      .select()
+      .single();
 
-const OTP = mongoose.model('OTP', otpSchema);
+    if (error) throw error;
+    return data;
+  }
 
-module.exports = OTP;
+  // Find valid OTP
+  static async findValid(identifier, otp, type) {
+    const { data, error } = await supabase
+      .from('otp_verifications')
+      .select('*')
+      .eq('identifier', identifier)
+      .eq('otp', otp)
+      .eq('type', type)
+      .eq('is_verified', false)
+      .gt('expires_at', new Date().toISOString())
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (error && error.code !== 'PGRST116') throw error;
+    return data;
+  }
+
+  // Mark as verified
+  static async markAsVerified(id) {
+    const { data, error } = await supabase
+      .from('otp_verifications')
+      .update({ is_verified: true })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
+
+  // Delete expired OTPs
+  static async deleteExpired() {
+    const { error } = await supabase
+      .from('otp_verifications')
+      .delete()
+      .lt('expires_at', new Date().toISOString());
+
+    if (error) throw error;
+  }
+}
+
+module.exports = OTPModel;
