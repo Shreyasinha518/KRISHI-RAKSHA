@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import AuthTabs from './AuthTabs';
 import LoginForm from './LoginForm';
 import RegisterForm from './RegisterForm';
-import SocialLogin from './SocialLogin';
+
 import TrustIndicators from './TrustIndicators.tsx';
 import TestimonialCard from './TestimonialCard';
 
@@ -163,7 +163,7 @@ const AuthenticationInteractive = () => {
             }
 
             <div className="mt-6">
-              <SocialLogin onSocialLogin={handleSocialLogin} isLoading={isLoading} />
+             
             </div>
 
             {activeTab === 'login' &&
@@ -185,34 +185,8 @@ const AuthenticationInteractive = () => {
               <TrustIndicators />
             </div>
 
-            <div className="bg-card rounded-2xl shadow-card p-6">
-              <h3 className="text-lg font-heading font-semibold text-foreground mb-4">
-                What Farmers Say
-              </h3>
-              <div className="space-y-4">
-                {testimonials.map((testimonial, index) =>
-                <TestimonialCard key={index} testimonial={testimonial} />
-                )}
-              </div>
-            </div>
-
-            <div className="bg-gradient-to-r from-primary to-secondary rounded-2xl shadow-card p-6 text-primary-foreground">
-              <h3 className="text-xl font-heading font-bold mb-2">Join 50,000+ Farmers</h3>
-              <p className="text-sm font-body opacity-90 mb-4">
-                Get instant payouts, AI predictions, and 24/7 support in your language
-              </p>
-              <div className="flex items-center space-x-4 text-sm font-body">
-                <div className="flex items-center space-x-1">
-                  <span className="text-2xl font-bold">4.8</span>
-                  <span className="opacity-90">/5 Rating</span>
-                </div>
-                <div className="h-8 w-px bg-primary-foreground/30" />
-                <div>
-                  <span className="text-2xl font-bold">₹500Cr+</span>
-                  <span className="opacity-90 block">Claims Paid</span>
-                </div>
-              </div>
-            </div>
+            
+            
           </div>
         </div>
       </div>
