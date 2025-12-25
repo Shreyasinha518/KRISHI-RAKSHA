@@ -251,5 +251,42 @@ class ClaimEvaluator:
 
 
 
+if __name__ == "__main__":
+    print("=" * 60)
+    print("🚀 CLAIM EVALUATION TEST STARTED")
+    print("=" * 60)
+
+    evaluator = ClaimEvaluator()
+
+    # -------- SAMPLE TEST INPUT --------
+    test_image_path = "inference/test_images/damaged1.jpg"
+
+    try:
+        result = evaluator.evaluate(
+            image_path=test_image_path,
+            crop_type="Wheat",
+            land_size="2 acres",
+            expected_yield=20.0,        # quintals
+            claim_amount=25000.0,
+            weather_features={
+                "rainfall": 120,
+                "temperature": 28
+            },
+            sowing_date="2024-11-10",
+            soil_type="Loamy",
+            irrigation_type="Canal",
+            fertilizer_usage=45.0,
+            historical_claims=1,
+            user_id="FARMER_101"
+        )
+
+        print("\n✅ FINAL CLAIM RESULT")
+        print("-" * 40)
+        for key, value in result.items():
+            print(f"{key} : {value}")
+
+    except Exception as e:
+        print("\n❌ ERROR DURING CLAIM EVALUATION")
+        print(str(e))
 
 
