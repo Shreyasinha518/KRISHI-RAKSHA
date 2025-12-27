@@ -1,4 +1,6 @@
 import Icon from '@/components/ui/AppIcon';
+import { ArrowRight } from "lucide-react";
+
 
 export default function ContactSection() {
   return (
@@ -24,7 +26,7 @@ export default function ContactSection() {
             href="/main-dashboard"
             className="inline-flex items-center space-x-2 px-8 py-4 bg-white/10 text-white border-2 border-white rounded-md hover:bg-white/20 transition-all duration-200 font-body font-medium"
           >
-            <Icon name="ArrowRightIcon" size={20} />
+           <ArrowRight size={20} className="inline-block" />
             <span>View Dashboard</span>
           </a>
         </div>

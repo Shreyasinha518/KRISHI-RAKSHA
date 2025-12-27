@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import QuickStatsCard from './QuickStatsCard';
+import QuickStatsCard from './QuickStateCard';
 import YieldPredictionForm from './YieldPredictionForm';
 import YieldResults from './YieldResults';
 import FileUploadZone from './FileUploadZone';
@@ -40,6 +40,7 @@ const DashboardInteractive = () => {
       unit: 'acres',
       trend: 'up' as const,
       trendValue: '+2.5%',
+      trendLabel: 'Increased land usage', // 🆕
       icon: 'MapIcon',
       bgColor: 'bg-primary/10',
       iconColor: 'text-primary',
@@ -50,6 +51,7 @@ const DashboardInteractive = () => {
       unit: 'claims',
       trend: 'neutral' as const,
       trendValue: '0%',
+      trendLabel: 'No change in claims', // 🆕
       icon: 'DocumentTextIcon',
       bgColor: 'bg-secondary/10',
       iconColor: 'text-secondary',
@@ -60,6 +62,7 @@ const DashboardInteractive = () => {
       unit: 'quintals',
       trend: 'up' as const,
       trendValue: '+8.2%',
+      trendLabel: 'Production increasing', // 🆕
       icon: 'ChartBarIcon',
       bgColor: 'bg-success/10',
       iconColor: 'text-success',
@@ -70,6 +73,7 @@ const DashboardInteractive = () => {
       unit: '/100',
       trend: 'down' as const,
       trendValue: '-5.3%',
+      trendLabel: 'Lower risk now', // 🆕
       icon: 'ShieldCheckIcon',
       bgColor: 'bg-accent/10',
       iconColor: 'text-accent',

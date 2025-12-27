@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import AppImage from '@/components/ui/AppImage';
 import Icon from '@/components/ui/AppIcon';
+import { ChatBubbleLeftIcon } from "@heroicons/react/24/outline";
 
 interface Story {
   id: number;
@@ -134,7 +135,7 @@ export default function SuccessStoriesSection() {
               </div>
 
               <div className="mb-6">
-                <Icon name="ChatBubbleLeftIcon" size={32} className="text-primary/20 mb-2" />
+               <ChatBubbleLeftIcon className="h-8 w-8 text-primary/20 mb-2" />
                 <p className="text-lg text-foreground leading-relaxed italic">
                   "{showHindi ? currentStory.testimonialHindi : currentStory.testimonial}"
                 </p>

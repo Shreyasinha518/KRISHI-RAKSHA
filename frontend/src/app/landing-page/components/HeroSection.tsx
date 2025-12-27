@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-
 import Icon from '@/components/ui/AppIcon';
+import { ArrowRight } from "lucide-react";
+
 
 interface HeroSectionProps {
   onGetStarted: () => void;
@@ -68,7 +69,8 @@ const HeroSection = ({ onGetStarted, onViewDemo }: HeroSectionProps) => {
                 className="group px-8 py-4 bg-primary text-primary-foreground rounded-lg font-body font-semibold text-lg shadow-primary hover:shadow-primary-hover hover:scale-[1.02] transition-all duration-200 flex items-center justify-center space-x-2"
               >
                 <span>Get Started Free</span>
-                <Icon name="ArrowRightIcon" size={20} className="group-hover:translate-x-1 transition-transform duration-200" />
+               <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform duration-200" />
+
               </button>
               
               <button

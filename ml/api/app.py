@@ -332,7 +332,13 @@ async def upload_image(file: UploadFile = File(...)):
         logger.error(f"Error uploading image: {e}")
         raise HTTPException(status_code=500, detail=format_error_message(e))
 
-
 if __name__ == "__main__":
     import uvicorn
+    import os
+    
+    port = int(os.environ.get("PORT", 8000))  # Cloud Run uses PORT env variable
+    
+    print(f"🚀 Starting KRISHI RAKSHA ML API Server on port {port}...")
+    print(f"📍 Server will run at: http://0.0.0.0:{port}")
+    print(f"📖 API docs at: http://0.0.0.0:{port}/docs")
     uvicorn.run(app, host="0.0.0.0", port=8000)

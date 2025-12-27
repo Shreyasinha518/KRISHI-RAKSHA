@@ -7,9 +7,8 @@ import * as HeroIconsSolid from '@heroicons/react/24/solid';
 import { QuestionMarkCircleIcon } from '@heroicons/react/24/outline';
 
 type IconVariant = 'outline' | 'solid';
-
 interface AppIconProps extends React.SVGProps<SVGSVGElement> {
-    name: string; // This will be typed by the AppIcon.d.ts
+    name: string;
     variant?: IconVariant;
     size?: number;
     className?: string;

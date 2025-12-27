@@ -1,3 +1,4 @@
+// src/app/not-found.tsx
 'use client';
 
 import React from 'react';
@@ -36,7 +37,7 @@ const NotFound = () => {
                         onClick={handleGoBack}
                         className="inline-flex items-center justify-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors duration-200"
                     >
-                        <Icon name="ArrowLeftIcon" size={16} />
+                    <Icon name="ArrowLeftIcon" size={16} />
                         Go Back
                     </button>
 

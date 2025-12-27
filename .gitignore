@@ -53,10 +53,5 @@ __pycache__/
 # Jupyter
 .ipynb_checkpoints/
 
-# ML artifacts (optional but recommended)
-*.h5
-*.pkl
-*.joblib
-*.pt
-*.onnx
+
 

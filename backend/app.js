@@ -3,7 +3,7 @@
 // Express App Setup & Middleware
 // REPLACE YOUR EXISTING FILE WITH THIS
 // ===================================================================
-
+const webhookRoutes = require('./routes/webhook.routes');
 const express = require('express');
 const cors = require('cors');
 const app = express();
@@ -12,7 +12,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
+app.use('/api/webhooks', webhookRoutes);
 // Request logging middleware
 app.use((req, res, next) => {
   console.log(`${req.method} ${req.path}`);

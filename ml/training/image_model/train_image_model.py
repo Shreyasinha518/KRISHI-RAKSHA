@@ -8,6 +8,7 @@ import sys
 import numpy as np
 import tensorflow as tf
 from tensorflow import keras
+from tensorflow.keras.metrics import Accuracy, Precision, Recall
 from tensorflow.keras import layers, callbacks
 import logging
 from pathlib import Path
@@ -77,7 +78,11 @@ def create_cnn_model(input_shape: tuple = (128,128, 3)) -> keras.Model:
     model.compile(
         optimizer=keras.optimizers.Adam(learning_rate=0.001),
         loss='binary_crossentropy',
-        metrics=['accuracy', 'precision', 'recall']
+        metrics=[
+        Accuracy(name="accuracy"),
+        Precision(name="precision"),
+        Recall(name="recall")
+    ]
     )
     
     return model

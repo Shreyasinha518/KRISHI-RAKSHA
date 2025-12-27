@@ -38,9 +38,10 @@ async function initializeServices() {
 
 // Start server
 async function startServer() {
+   console.log(`🔍 Starting server on PORT: ${PORT} (from env: ${process.env.PORT})`);
   await initializeServices();
   
-  app.listen(PORT, () => {
+  app.listen(PORT, '0.0.0.0', () => {  // ⭐ Added '0.0.0.0'
     console.log('');
     console.log('╔═══════════════════════════════════════╗');
     console.log('║   KRISHI RAKSHA API SERVER RUNNING    ║');

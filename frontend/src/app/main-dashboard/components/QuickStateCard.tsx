@@ -1,53 +1,64 @@
 import Icon from '@/components/ui/AppIcon';
+import { ArrowUpIcon, ArrowDownIcon, MinusIcon } from '@heroicons/react/24/outline';
 
 interface QuickStatsCardProps {
   title: string;
-  value: string;
-  unit: string;
-  trend: 'up' | 'down' | 'neutral';
-  trendValue: string;
+  value: string | number;
+  unit?: string;
   icon: string;
-  bgColor: string;
-  iconColor: string;
+  trend?: 'up' | 'down' | 'neutral';
+  trendValue?: string;
+  trendLabel?: string;
+  bgColor?: string;
+  iconColor?: string;
 }
 
 const QuickStatsCard = ({
   title,
   value,
-  unit,
-  trend,
-  trendValue,
+  unit = '',
   icon,
-  bgColor,
-  iconColor,
+  trend = 'neutral',
+  trendValue = '',
+  trendLabel = '',
+  bgColor = 'bg-blue-50',
+  iconColor = 'text-blue-600',
 }: QuickStatsCardProps) => {
-  const getTrendIcon = () => {
-    if (trend === 'up') return 'ArrowTrendingUpIcon';
-    if (trend === 'down') return 'ArrowTrendingDownIcon';
-    return 'MinusIcon';
-  };
+  const TrendIcon = {
+    up: ArrowUpIcon,
+    down: ArrowDownIcon,
+    neutral: MinusIcon,
+  }[trend];
 
-  const getTrendColor = () => {
-    if (trend === 'up') return 'text-success';
-    if (trend === 'down') return 'text-error';
-    return 'text-muted-foreground';
-  };
+  const trendColor = {
+    up: 'text-green-600',
+    down: 'text-red-600',
+    neutral: 'text-gray-500',
+  }[trend];
 
   return (
-    <div className="bg-card border border-border rounded-lg p-6 shadow-card hover:shadow-card-hover transition-all duration-300">
+    <div className="bg-white border border-gray-100 rounded-lg p-6 shadow-sm hover:shadow-md transition-all duration-300">
       <div className="flex items-start justify-between mb-4">
         <div className={`${bgColor} p-3 rounded-lg`}>
           <Icon name={icon as any} size={24} className={iconColor} />
         </div>
-        <div className={`flex items-center space-x-1 ${getTrendColor()}`}>
-          <Icon name={getTrendIcon() as any} size={16} />
-          <span className="text-sm font-body font-medium">{trendValue}</span>
-        </div>
+
+        {(trendValue || trendLabel) && (
+          <div className={`flex items-center space-x-1 ${trendColor}`}>
+            <TrendIcon className="h-4 w-4" />
+            <span className="text-sm font-medium">{trendValue}</span>
+            {trendLabel && (
+              <span className="text-xs text-gray-400">{trendLabel}</span>
+            )}
+          </div>
+        )}
       </div>
-      <h3 className="text-text-secondary text-sm font-body mb-1">{title}</h3>
+
+      <h3 className="text-gray-500 text-sm">{title}</h3>
+
       <div className="flex items-baseline space-x-1">
-        <span className="text-3xl font-heading font-bold text-foreground">{value}</span>
-        <span className="text-text-secondary text-sm font-body">{unit}</span>
+        <span className="text-3xl font-bold text-gray-900">{value}</span>
+        {unit && <span className="text-gray-500 text-sm">{unit}</span>}
       </div>
     </div>
   );

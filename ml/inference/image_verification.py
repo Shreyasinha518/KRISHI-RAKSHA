@@ -39,7 +39,7 @@ class ImageVerifier:
     
     def _get_default_model_dir(self) -> str:
         base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        return os.path.join(base_dir, 'image_model')
+        return os.path.join(base_dir, 'model', 'image_verification')
 
     
     def _load_models(self) -> None:

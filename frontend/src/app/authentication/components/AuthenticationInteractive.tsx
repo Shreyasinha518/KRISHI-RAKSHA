@@ -6,8 +6,8 @@ import AuthTabs from './AuthTabs';
 import LoginForm from './LoginForm';
 import RegisterForm from './RegisterForm';
 
-import TrustIndicators from './TrustIndicators.tsx';
-import TestimonialCard from './TestimonialCard';
+import TrustIndicators from './TrustIndicators';
+
 
 interface LoginFormData {
   identifier: string;

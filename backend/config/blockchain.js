@@ -17,7 +17,8 @@ const BLOCKCHAIN_CONFIG = {
 };
 
 // Contract ABI - we'll create this file next
-const CONTRACT_ABI = require('../../blockchain/abi/KrishiRaksha.json');
+const path = require('path');
+const CONTRACT_ABI = require(path.join(__dirname, '../blockchain/abi/KrishiRaksha.json'));
 
 // Create provider
 const provider = new ethers.providers.JsonRpcProvider(BLOCKCHAIN_CONFIG.rpcUrl);

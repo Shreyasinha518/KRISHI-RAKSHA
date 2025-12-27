@@ -3,7 +3,7 @@ import Icon from '@/components/ui/AppIcon';
 interface YieldResultsProps {
   predictedYield: number;
   confidence: number;
-  riskLevel: 'low' | 'medium' | 'high';
+  riskLevel: string;
   recommendations: string[];
 }
 
