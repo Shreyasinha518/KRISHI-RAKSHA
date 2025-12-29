@@ -59,31 +59,7 @@ const LiveDemoSection = () => {
         </div>
 
         <div className="max-w-6xl mx-auto">
-          <div className="grid lg:grid-cols-4 gap-4 mb-8">
-            {demoStats.map((stat, index) => (
-              <div
-                key={index}
-                className="p-6 bg-card rounded-xl border border-border shadow-card hover:shadow-card-hover transition-all duration-300"
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-primary/10 to-secondary/10 rounded-lg flex items-center justify-center">
-                    <Icon name={stat.icon as any} size={20} className="text-primary" />
-                  </div>
-                  <span className={`text-xs font-body font-medium px-2 py-1 rounded-full ${
-                    stat.change.startsWith('+') ? 'bg-success/10 text-success' : 'bg-error/10 text-error'
-                  }`}>
-                    {stat.change}
-                  </span>
-                </div>
-                <p className="text-2xl font-heading font-bold text-foreground mb-1">
-                  {stat.value}
-                </p>
-                <p className="text-sm text-text-secondary font-body">
-                  {stat.label}
-                </p>
-              </div>
-            ))}
-          </div>
+          
 
           <div className="bg-card rounded-2xl border border-border shadow-card-hover overflow-hidden">
             <div className="p-4 bg-muted border-b border-border flex items-center justify-between">

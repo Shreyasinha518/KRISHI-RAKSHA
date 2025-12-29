@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import QuickStatsCard from './QuickStateCard';
+
 import YieldPredictionForm from './YieldPredictionForm';
 import YieldResults from './YieldResults';
 import FileUploadZone from './FileUploadZone';
@@ -161,13 +161,8 @@ const DashboardInteractive = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {quickStats.map((stat, index) => (
-            <QuickStatsCard key={index} {...stat} />
-          ))}
-        </div>
-
+      
+       
         {/* Prediction Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <YieldPredictionForm onSubmit={handlePredictionSubmit} isLoading={isLoading} />

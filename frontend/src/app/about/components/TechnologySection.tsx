@@ -63,9 +63,8 @@ export default function TechnologySection() {
         {technologies.map((tech, index) => (
           <div
             key={tech.id}
-            className={`bg-card rounded-lg shadow-card hover:shadow-card-hover transition-all duration-300 p-6 lg:p-8 border border-border ${
-              index % 2 === 0 ? 'lg:ml-0 lg:mr-12' : 'lg:ml-12 lg:mr-0'
-            }`}
+            className="bg-card rounded-lg shadow-card hover:shadow-card-hover transition-all duration-300 p-6 lg:p-8 border border-border"
+
           >
             <div className="flex flex-col lg:flex-row lg:items-start lg:space-x-6">
               <div className="flex-shrink-0 mb-4 lg:mb-0">

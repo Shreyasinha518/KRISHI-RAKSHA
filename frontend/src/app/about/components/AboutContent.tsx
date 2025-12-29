@@ -5,10 +5,9 @@ import Header from '@/components/common/Header';
 import NavigationBreadcrumb from '@/components/common/NavigationBreadcrumb';
 import MissionSection from './MissionSection';
 import FeaturesSection from './FeaturesSection';
-import TeamSection from './TeamSection';
-import PartnersSection from './PartnersSection';
-import MetricsSection from './MetricsSection';
-import SuccessStoriesSection from './SuccessStoriesSection';
+
+
+
 import TechnologySection from './TechnologySection';
 import FAQSection from './FAQSection';
 import ContactSection from './ContactSection';
@@ -46,10 +45,8 @@ export default function AboutContent() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
         <MissionSection />
         <FeaturesSection />
-        <TeamSection />
-        <PartnersSection />
-        <MetricsSection />
-        <SuccessStoriesSection />
+        
+        
         <TechnologySection />
         <FAQSection />
         <ContactSection />

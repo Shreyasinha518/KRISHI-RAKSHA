@@ -6,8 +6,8 @@ import HeroSection from './HeroSection';
 import FeaturesGrid from './FeaturesGrid';
 import HowItWorksTimeline from './HowitWorksTimeline';
 import LiveDemoSection from './LiveDemoSection';
-import TestimonialCarousel from './TestimonialCarousel';
-import TrustSignals from './TrustSignals';
+
+
 import CTASection from './CTASection';
 import Footer from './Footer';
 
@@ -52,8 +52,7 @@ const LandingPageInteractive = () => {
       <div id="demo-section">
         <LiveDemoSection />
       </div>
-      <TestimonialCarousel />
-      <TrustSignals />
+     
       <CTASection onGetStarted={handleGetStarted} />
       <Footer />
     </div>

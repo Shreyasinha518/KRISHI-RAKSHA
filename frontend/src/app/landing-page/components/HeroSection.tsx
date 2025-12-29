@@ -24,7 +24,8 @@ const HeroSection = ({ onGetStarted, onViewDemo }: HeroSectionProps) => {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_50%,rgba(14,165,233,0.1),transparent_50%)]" />
         
         <div className="relative mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <div className="flex justify-center">
+
             <div className="text-center lg:text-left space-y-6">
               <div className="h-16 bg-muted rounded-lg animate-pulse" />
               <div className="h-32 bg-muted rounded-lg animate-pulse" />
@@ -93,72 +94,11 @@ const HeroSection = ({ onGetStarted, onViewDemo }: HeroSectionProps) => {
               </div>
               <div className="flex items-center space-x-2">
                 <Icon name="CheckCircleIcon" size={20} className="text-success" />
-                <span className="text-sm font-body text-text-secondary">Regional Languages</span>
+                <span className="text-sm font-body text-text-secondary">Future Goal For Regional Languages</span>
               </div>
             </div>
           </div>
-          
-          <div className="hidden lg:block">
-            <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-2xl blur-3xl" />
-              <div className="relative bg-card rounded-2xl shadow-card-hover p-8 border border-border">
-                <div className="space-y-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                        <Icon name="ChartBarIcon" size={24} className="text-primary" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-body text-text-secondary">Predicted Yield</p>
-                        <p className="text-2xl font-heading font-bold text-foreground">2,450 kg</p>
-                      </div>
-                    </div>
-                    <div className="px-3 py-1 bg-success/10 rounded-full">
-                      <span className="text-sm font-body font-medium text-success">+12.5%</span>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between text-sm font-body">
-                      <span className="text-text-secondary">Confidence Score</span>
-                      <span className="font-medium text-foreground">94%</span>
-                    </div>
-                    <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
-                      <div className="h-full bg-gradient-to-r from-primary to-secondary rounded-full" style={{ width: '94%' }} />
-                    </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-4 pt-4">
-                    <div className="p-4 bg-muted rounded-lg">
-                      <div className="flex items-center space-x-2 mb-2">
-                        <Icon name="CloudIcon" size={16} className="text-secondary" />
-                        <span className="text-xs font-body text-text-secondary">Weather Risk</span>
-                      </div>
-                      <p className="text-lg font-heading font-bold text-foreground">Low</p>
-                    </div>
-                    <div className="p-4 bg-muted rounded-lg">
-                      <div className="flex items-center space-x-2 mb-2">
-                        <Icon name="ShieldCheckIcon" size={16} className="text-success" />
-                        <span className="text-xs font-body text-text-secondary">Coverage</span>
-                      </div>
-                      <p className="text-lg font-heading font-bold text-foreground">₹2.5L</p>
-                    </div>
-                  </div>
-                  
-                  <div className="pt-4 border-t border-border">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-body text-text-secondary">Blockchain Verified</span>
-                      <div className="flex items-center space-x-1">
-                        <div className="w-2 h-2 bg-success rounded-full animate-pulse" />
-                        <span className="text-xs font-body text-success">Active</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
-        </div>
       </div>
     </section>
   );

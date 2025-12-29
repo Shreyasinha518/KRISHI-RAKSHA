@@ -36,7 +36,7 @@ export default function FAQSection() {
     {
       id: 4,
       question: 'What languages is the platform available in?',
-      answer: 'The platform supports 10+ Indian regional languages including Hindi, Tamil, Telugu, Marathi, Bengali, Gujarati, Kannada, Malayalam, Punjabi, and Odia. Voice assistance is available for farmers with limited literacy, and WhatsApp integration enables easy communication.',
+      answer: 'The platform supports 10+ Indian regional languages including Hindi, Tamil, Telugu, Marathi, Bengali, Gujarati, Kannada, Malayalam, Punjabi, and Odia. Voice assistance is available for farmers with limited literacy, and WhatsApp integration enables easy communication,these are future goal but currently the platform comunicates only in ENGLISH LANGUAGE',
     },
     {
       id: 5,
@@ -120,13 +120,7 @@ export default function FAQSection() {
           Still have questions? Our support team is here to help.
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-center space-y-3 sm:space-y-0 sm:space-x-4">
-          <a
-            href="tel:1800-123-4567"
-            className="inline-flex items-center space-x-2 px-6 py-3 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors duration-200 shadow-primary"
-          >
-            <Icon name="PhoneIcon" size={20} />
-            <span className="font-body font-medium">Call: 1800-123-4567</span>
-          </a>
+         
           <a
             href="https://wa.me/919876543210"
             target="_blank"

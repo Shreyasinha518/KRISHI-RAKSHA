@@ -41,7 +41,7 @@ export default function FeaturesSection() {
     {
       id: 5,
       icon: 'LanguageIcon',
-      title: 'Regional Language Support',
+      title: 'Future Goal For Regional Language Support',
       description: 'Complete platform availability in Hindi, Tamil, Telugu, Marathi, Bengali, Gujarati, Kannada, Malayalam, Punjabi, and Odia. Voice assistance and WhatsApp integration ensure accessibility for farmers with varying literacy levels.',
       color: 'accent',
     },

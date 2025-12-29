@@ -31,23 +31,7 @@ export default function ContactSection() {
           </a>
         </div>
 
-        <div className="grid sm:grid-cols-3 gap-6 max-w-3xl mx-auto">
-          <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
-            <Icon name="PhoneIcon" size={24} className="text-white mx-auto mb-2" />
-            <p className="text-sm text-white/90 font-body">Toll-Free Helpline</p>
-            <p className="text-white font-body font-medium">1800-123-4567</p>
-          </div>
-          <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
-            <Icon name="EnvelopeIcon" size={24} className="text-white mx-auto mb-2" />
-            <p className="text-sm text-white/90 font-body">Email Support</p>
-            <p className="text-white font-body font-medium">support@agriinsure.in</p>
-          </div>
-          <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
-            <Icon name="MapPinIcon" size={24} className="text-white mx-auto mb-2" />
-            <p className="text-sm text-white/90 font-body">Head Office</p>
-            <p className="text-white font-body font-medium">New Delhi, India</p>
-          </div>
-        </div>
+        
       </div>
     </section>
   );
