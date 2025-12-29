@@ -9,15 +9,16 @@ const cors = require('cors');
 const app = express();
 
 // Middleware
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use('/api/webhooks', webhookRoutes);
-// Request logging middleware
-app.use((req, res, next) => {
-  console.log(`${req.method} ${req.path}`);
-  next();
-});
+// Update your CORS configuration in app.js (around line 9)
+app.use(cors({
+  origin: [
+    'http://localhost:3000',  // Local development
+    'https://your-frontend-domain.com'  // Your production frontend URL
+  ],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+}));
 
 // Import routes
 const authRoutes = require('./routes/auth.routes');
@@ -33,12 +34,17 @@ app.use('/api/claims', claimRoutes);
 app.use('/api', blockchainRoutes); // blockchain routes at /api/blockchain/...
 app.use('/api/payouts', payoutRoutes);
 
-// Health check route
+// Update the health check route
 app.get('/health', (req, res) => {
-  res.json({
+  res.status(200).json({
     status: 'ok',
     message: 'Server is running',
     timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development',
+    uptime: process.uptime(),
+    memoryUsage: process.memoryUsage(),
+    nodeVersion: process.version,
+    platform: process.platform
   });
 });
 
