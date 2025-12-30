@@ -243,56 +243,74 @@ const FarmInformation = ({ parcels, onAddParcel, onEditParcel, onDeleteParcel }:
       {/* Parcels List */}
       <div className="space-y-4">
         {parcels.length === 0 ? (
-          <div className="text-center py-12 text-text-secondary">
+          <div className="text-center py-12 text-text-secondary bg-muted/30 rounded-lg border border-border">
             <Icon name="MapIcon" size={48} className="mx-auto mb-4 opacity-50" />
-            <p className="font-body">No land parcels added yet. Click "Add Parcel" to get started.</p>
+            <p className="font-body text-base mb-2">No land parcels added yet.</p>
+            <p className="font-body text-sm">Click "Add Parcel" to add your farm details.</p>
           </div>
         ) : (
           parcels.map((parcel) => (
             <div
               key={parcel.id}
-              className="bg-background border border-border rounded-lg p-4 hover:shadow-card transition-shadow duration-150"
+              className="bg-background border border-border rounded-lg p-5 hover:shadow-card transition-all duration-150 hover:border-primary/20"
             >
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  <div>
-                    <p className="text-xs font-body text-text-secondary mb-1">Area</p>
-                    <p className="font-body font-semibold text-foreground">
+                <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="bg-muted/30 rounded-md p-3">
+                    <p className="text-xs font-body text-text-secondary mb-1 flex items-center gap-1">
+                      <Icon name="MapIcon" size={14} />
+                      Area
+                    </p>
+                    <p className="font-body font-semibold text-foreground text-lg">
                       {parcel.area} {parcel.unit}
                     </p>
                   </div>
-                  <div>
-                    <p className="text-xs font-body text-text-secondary mb-1">Crop Type</p>
-                    <p className="font-body font-semibold text-foreground">{parcel.cropType}</p>
+                  <div className="bg-muted/30 rounded-md p-3">
+                    <p className="text-xs font-body text-text-secondary mb-1 flex items-center gap-1">
+                      <Icon name="ChartBarIcon" size={14} />
+                      Crop Type
+                    </p>
+                    <p className="font-body font-semibold text-foreground text-lg">{parcel.cropType}</p>
                   </div>
-                  <div>
-                    <p className="text-xs font-body text-text-secondary mb-1">Soil Type</p>
-                    <p className="font-body font-semibold text-foreground">{parcel.soilType}</p>
+                  <div className="bg-muted/30 rounded-md p-3">
+                    <p className="text-xs font-body text-text-secondary mb-1 flex items-center gap-1">
+                      <Icon name="MapPinIcon" size={14} />
+                      Soil Type
+                    </p>
+                    <p className="font-body font-semibold text-foreground text-lg">{parcel.soilType}</p>
                   </div>
-                  <div>
-                    <p className="text-xs font-body text-text-secondary mb-1">Irrigation</p>
-                    <p className="font-body font-semibold text-foreground">{parcel.irrigationType}</p>
+                  <div className="bg-muted/30 rounded-md p-3">
+                    <p className="text-xs font-body text-text-secondary mb-1 flex items-center gap-1">
+                      <Icon name="MapPinIcon" size={14} />
+                      Irrigation
+                    </p>
+                    <p className="font-body font-semibold text-foreground text-lg">{parcel.irrigationType}</p>
                   </div>
-                  <div className="sm:col-span-2">
-                    <p className="text-xs font-body text-text-secondary mb-1">Location</p>
-                    <p className="font-body font-semibold text-foreground">{parcel.location}</p>
+                  <div className="sm:col-span-2 bg-muted/30 rounded-md p-3">
+                    <p className="text-xs font-body text-text-secondary mb-1 flex items-center gap-1">
+                      <Icon name="MapPinIcon" size={14} />
+                      Location
+                    </p>
+                    <p className="font-body font-semibold text-foreground text-lg">{parcel.location}</p>
                   </div>
                 </div>
                 <div className="flex sm:flex-col gap-2">
                   <button
                     onClick={() => handleEdit(parcel)}
-                    className="flex items-center justify-center gap-1 px-3 py-2 text-primary hover:bg-primary/10 rounded-md transition-colors duration-150 font-body text-sm"
+                    className="flex items-center justify-center gap-1 px-4 py-2 text-primary hover:bg-primary/10 rounded-md transition-colors duration-150 font-body text-sm font-medium"
                   >
                     <Icon name="PencilIcon" size={16} />
                     Edit
                   </button>
-                  <button
-                    onClick={() => onDeleteParcel(parcel.id)}
-                    className="flex items-center justify-center gap-1 px-3 py-2 text-error hover:bg-error/10 rounded-md transition-colors duration-150 font-body text-sm"
-                  >
-                    <Icon name="TrashIcon" size={16} />
-                    Delete
-                  </button>
+                  {parcels.length > 1 && (
+                    <button
+                      onClick={() => onDeleteParcel(parcel.id)}
+                      className="flex items-center justify-center gap-1 px-4 py-2 text-error hover:bg-error/10 rounded-md transition-colors duration-150 font-body text-sm font-medium"
+                    >
+                      <Icon name="TrashIcon" size={16} />
+                      Delete
+                    </button>
+                  )}
                 </div>
               </div>
             </div>

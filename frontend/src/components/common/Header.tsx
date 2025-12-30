@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import Icon from '@/components/ui/AppIcon';
@@ -16,14 +17,58 @@ interface HeaderProps {
 
 const Header = ({
   isAuthenticated = false,
-  userName = 'User',
+  userName: propUserName = '',
   onLogout,
   onMetaMaskConnect,
   isMetaMaskConnected = false,
   walletAddress,
 }: HeaderProps) => {
+  const router = useRouter();
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [userName, setUserName] = useState(propUserName || 'User');
+
+  // Get userName from localStorage if not provided
+  useEffect(() => {
+    if (typeof window !== 'undefined' && isAuthenticated) {
+      const storedUserName = localStorage.getItem('userName');
+      if (storedUserName && !propUserName) {
+        setUserName(storedUserName);
+      } else if (propUserName) {
+        setUserName(propUserName);
+      }
+    }
+  }, [isAuthenticated, propUserName]);
+
+  // Default logout handler
+  const handleLogout = async () => {
+    if (isLoggingOut) return;
+    
+    setIsLoggingOut(true);
+    
+    try {
+      // Clear all authentication data
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('token');
+        localStorage.removeItem('isAuthenticated');
+        localStorage.removeItem('userName');
+        localStorage.removeItem('userId');
+      }
+      
+      // Call custom logout handler if provided
+      if (onLogout) {
+        onLogout();
+      }
+      
+      // Redirect to authentication page
+      router.push('/authentication');
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
 
   const navigationItems = [
     { label: 'Dashboard', path: '/main-dashboard', icon: 'ChartBarIcon' },
@@ -99,14 +144,34 @@ const Header = ({
               </button>
             )}
 
+            {/* User Name Display (Desktop) */}
+            {isAuthenticated && userName && (
+              <div className="hidden lg:flex items-center space-x-2 px-3 py-2 rounded-md bg-muted/50">
+                <Icon name="UserIcon" size={16} className="text-primary" />
+                <span className="text-sm font-body font-medium text-foreground">
+                  {userName || 'User'}
+                </span>
+              </div>
+            )}
+
             {/* Logout (Desktop) */}
             {isAuthenticated && (
               <button
-                onClick={onLogout}
-                className="hidden lg:flex items-center space-x-2 px-4 py-2 rounded-md text-error hover:bg-muted"
+                onClick={handleLogout}
+                disabled={isLoggingOut}
+                className="hidden lg:flex items-center space-x-2 px-4 py-2 rounded-lg bg-error/10 hover:bg-error/20 text-error border border-error/20 hover:border-error/40 transition-all duration-200 font-body font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
               >
-                <Icon name="ArrowRightOnRectangleIcon" size={18} />
-                <span>Logout</span>
+                {isLoggingOut ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-error border-t-transparent rounded-full animate-spin" />
+                    <span>Logging out...</span>
+                  </>
+                ) : (
+                  <>
+                    <Icon name="ArrowRightOnRectangleIcon" size={18} />
+                    <span>Logout</span>
+                  </>
+                )}
               </button>
             )}
 
@@ -145,12 +210,22 @@ const Header = ({
               <>
                 <div className="border-t border-border my-3" />
 
+                {/* User Name (Mobile) */}
+                {userName && (
+                  <div className="flex items-center space-x-2 px-4 py-2 rounded-md bg-muted/50 mb-2">
+                    <Icon name="UserIcon" size={16} className="text-primary" />
+                    <span className="text-sm font-body font-medium text-foreground">
+                      {userName || 'User'}
+                    </span>
+                  </div>
+                )}
+
                 <button
                   onClick={() => {
                     onMetaMaskConnect?.();
                     setIsMobileMenuOpen(false);
                   }}
-                  className="w-full flex items-center space-x-2 px-4 py-2 rounded-md bg-secondary"
+                  className="w-full flex items-center justify-center space-x-2 px-4 py-2 rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/90 transition-colors duration-200 font-body font-medium"
                 >
                   <Icon name="WalletIcon" size={18} />
                   <span>
@@ -162,13 +237,23 @@ const Header = ({
 
                 <button
                   onClick={() => {
-                    onLogout?.();
+                    handleLogout();
                     setIsMobileMenuOpen(false);
                   }}
-                  className="w-full flex items-center space-x-2 px-4 py-2 rounded-md text-error hover:bg-muted"
+                  disabled={isLoggingOut}
+                  className="w-full flex items-center justify-center space-x-2 px-4 py-2 rounded-lg bg-error/10 hover:bg-error/20 text-error border border-error/20 hover:border-error/40 transition-all duration-200 font-body font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <Icon name="ArrowRightOnRectangleIcon" size={18} />
-                  <span>Logout</span>
+                  {isLoggingOut ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-error border-t-transparent rounded-full animate-spin" />
+                      <span>Logging out...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Icon name="ArrowRightOnRectangleIcon" size={18} />
+                      <span>Logout</span>
+                    </>
+                  )}
                 </button>
               </>
             )}

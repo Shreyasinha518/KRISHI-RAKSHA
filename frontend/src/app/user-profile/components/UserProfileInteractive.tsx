@@ -1,9 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import ProfileHeader from './ProfileHeader';
 import FarmInformation from './FarmInformation';
 import ActivityTimeline from './ActivityTimeline';
+import { apiClient } from '@/lib/api';
 
 interface LandParcel {
   id: string;
@@ -35,38 +37,37 @@ interface Document {
   previewAlt?: string;
 }
 
-const UserProfileInteractive = () => {
-  const [isHydrated, setIsHydrated] = useState(false);
-  const [user, setUser] = useState({
-  name: '',
-  email: '',
-  phone: '',
-  avatar: '',
-  avatarAlt: '',
-  language: 'en',
-  joinedDate: ''
-});
+interface FarmerData {
+  id: string;
+  name: string;
+  phone: string;
+  email: string;
+  village?: string;
+  district?: string;
+  state?: string;
+  landSizeAcres?: number;
+  cropType?: string;
+  isPhoneVerified: boolean;
+  isEmailVerified: boolean;
+}
 
-  const [parcels, setParcels] = useState<LandParcel[]>([
-  {
-    id: '1',
-    area: 5.5,
-    unit: 'acres',
-    cropType: 'Rice',
-    soilType: 'Alluvial',
-    irrigationType: 'Canal',
-    location: 'Thanjavur, Tamil Nadu'
-  },
-  {
-    id: '2',
-    area: 3.2,
-    unit: 'acres',
-    cropType: 'Cotton',
-    soilType: 'Black',
-    irrigationType: 'Drip',
-    location: 'Nagpur, Maharashtra'
-  }]
-  );
+const UserProfileInteractive = () => {
+  const router = useRouter();
+  const [isHydrated, setIsHydrated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [farmerData, setFarmerData] = useState<FarmerData | null>(null);
+  const [user, setUser] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    avatar: 'https://ui-avatars.com/api/?name=Farmer&background=10b981&color=fff&size=128',
+    avatarAlt: 'Farmer profile picture',
+    language: 'en',
+    joinedDate: ''
+  });
+
+  const [parcels, setParcels] = useState<LandParcel[]>([]);
 
   const [activities] = useState<Activity[]>([
   {
@@ -154,7 +155,67 @@ const UserProfileInteractive = () => {
 
   useEffect(() => {
     setIsHydrated(true);
+    fetchFarmerData();
   }, []);
+
+  const fetchFarmerData = async () => {
+    try {
+      setIsLoading(true);
+      setError('');
+      
+      // Check if user is authenticated
+      if (typeof window === 'undefined') return;
+      
+      const token = localStorage.getItem('token');
+      if (!token) {
+        router.push('/authentication');
+        return;
+      }
+
+      // Fetch farmer data from backend
+      const response = await apiClient.getCurrentFarmer();
+      
+      if (response.success && response.farmer) {
+        const farmer = response.farmer;
+        setFarmerData(farmer);
+        
+        // Update user state with farmer data
+        setUser({
+          name: farmer.name || 'Farmer',
+          email: farmer.email || '',
+          phone: farmer.phone || '',
+          avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(farmer.name || 'Farmer')}&background=10b981&color=fff&size=128`,
+          avatarAlt: `${farmer.name} profile picture`,
+          language: 'en',
+          joinedDate: new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+        });
+
+        // Create initial parcel from registration data if available
+        if (farmer.state && farmer.landSizeAcres && farmer.cropType) {
+          const initialParcel: LandParcel = {
+            id: '1',
+            area: farmer.landSizeAcres,
+            unit: 'acres',
+            cropType: farmer.cropType,
+            soilType: 'Alluvial', // Default, can be updated
+            irrigationType: 'Canal', // Default, can be updated
+            location: `${farmer.village || ''}${farmer.village && farmer.district ? ', ' : ''}${farmer.district || ''}${farmer.district && farmer.state ? ', ' : ''}${farmer.state || ''}`.trim() || farmer.state || 'Not specified'
+          };
+          setParcels([initialParcel]);
+        }
+      }
+    } catch (error: any) {
+      console.error('Failed to fetch farmer data:', error);
+      setError(error.message || 'Failed to load profile data');
+      
+      // If unauthorized, redirect to login
+      if (error.message?.includes('token') || error.message?.includes('Unauthorized')) {
+        router.push('/authentication');
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleAvatarUpload = (file: File) => {
     if (!isHydrated) return;
@@ -196,7 +257,7 @@ const UserProfileInteractive = () => {
     setDocuments(documents.filter((d) => d.id !== id));
   };
 
-  if (!isHydrated) {
+  if (!isHydrated || isLoading) {
     return (
       <div className="min-h-screen bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -206,8 +267,26 @@ const UserProfileInteractive = () => {
             <div className="h-64 bg-muted rounded-lg animate-pulse" />
           </div>
         </div>
-      </div>);
+      </div>
+    );
+  }
 
+  if (error && !farmerData) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="bg-error/10 border border-error rounded-lg p-6 text-center">
+            <p className="text-error font-body">{error}</p>
+            <button
+              onClick={fetchFarmerData}
+              className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors font-body"
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (

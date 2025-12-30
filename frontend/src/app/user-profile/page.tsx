@@ -13,10 +13,8 @@ export default function UserProfilePage() {
     <>
       <Header
         isAuthenticated={true}
-        userName="Rajesh Kumar"
-        userAvatar="https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg"
-        isMetaMaskConnected={true}
-        walletAddress="0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb"
+        isMetaMaskConnected={false}
+        walletAddress=""
       />
       <NavigationBreadcrumb />
       <UserProfileInteractive />

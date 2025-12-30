@@ -71,24 +71,37 @@ const ProfileHeader = ({ user, onAvatarUpload }: ProfileHeaderProps) => {
         </div>
 
         {/* User Info */}
-        <div className="text-center md:text-left">
-          <h1 className="text-3xl font-bold">{user.name}</h1>
+        <div className="text-center md:text-left flex-1">
+          <div className="flex items-center gap-3 justify-center md:justify-start mb-2">
+            <h1 className="text-3xl font-bold text-foreground">{user.name || 'Farmer'}</h1>
+            {user.email && (
+              <span className="px-2 py-1 bg-primary/10 text-primary rounded-full text-xs font-body font-medium">
+                Verified
+              </span>
+            )}
+          </div>
 
           <div className="mt-2 space-y-2 text-text-secondary">
-            <div className="flex gap-2 items-center justify-center md:justify-start">
-              <Icon name="EnvelopeIcon" size={16} />
-              <span>{user.email}</span>
-            </div>
+            {user.email && (
+              <div className="flex gap-2 items-center justify-center md:justify-start">
+                <Icon name="EnvelopeIcon" size={16} />
+                <span className="font-body">{user.email}</span>
+              </div>
+            )}
 
-            <div className="flex gap-2 items-center justify-center md:justify-start">
-              <Icon name="PhoneIcon" size={16} />
-              <span>{user.phone}</span>
-            </div>
+            {user.phone && (
+              <div className="flex gap-2 items-center justify-center md:justify-start">
+                <Icon name="PhoneIcon" size={16} />
+                <span className="font-body">{user.phone.replace('+91', '')}</span>
+              </div>
+            )}
 
-            <div className="flex gap-2 items-center justify-center md:justify-start">
-              <Icon name="CalendarIcon" size={16} />
-              <span>Member since {user.joinedDate}</span>
-            </div>
+            {user.joinedDate && (
+              <div className="flex gap-2 items-center justify-center md:justify-start">
+                <Icon name="CalendarIcon" size={16} />
+                <span className="font-body">Member since {user.joinedDate}</span>
+              </div>
+            )}
           </div>
         </div>
 
