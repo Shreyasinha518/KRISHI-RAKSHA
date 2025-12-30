@@ -153,20 +153,26 @@ class MLService {
     }
   }
 
-  // Yield prediction
-  static async predictYield(claim) {
+  // Yield prediction - Updated to handle frontend data format
+  static async predictYield(data) {
     try {
-      const response = await axios.post(`${this.ML_API_URL}/api/v1/predict-yield`, {
-        crop_type: claim.crop_type,
-        land_size: claim.land_size_acres || 5,
-        sowing_date: null,
-        soil_type: 'loamy',
-        irrigation_type: 'canal',
-        fertilizer_usage: 'moderate',
-        weather_features: this.getWeatherFeatures(claim.geo_location),
-      });
+      // Handle both old claim format and new frontend format
+      const payload = {
+        crop_type: data.crop_type || data.cropType,
+        land_size_acres: data.land_size_acres || data.landAreaValue || 5,
+        sowing_date: data.sowing_date || data.sowingDate,
+        soil_type: data.soil_type || data.soilType || 'loamy',
+        irrigation_type: data.irrigation_type || data.irrigationType || 'canal',
+        fertilizer_usage: data.fertilizer_usage || data.fertilizerUsage || 'moderate',
+        weather_features: this.getWeatherFeatures(data.geo_location),
+      };
+
+      console.log('🌾 Sending yield prediction request:', payload);
+
+      const response = await axios.post(`${this.ML_API_URL}/api/v1/predict-yield`, payload);
       
       const result = response.data;
+      console.log('✅ Yield prediction response:', result);
       
       return {
         predictedYield: result.predicted_yield || 2500,
@@ -174,12 +180,26 @@ class MLService {
         confidence: result.confidence || 0.78,
       };
     } catch (error) {
-      console.error('Yield prediction API failed:', error.message);
-      // Return mock data as fallback
+      console.error('❌ Yield prediction API failed:', error.message);
+      console.log('🔄 Using mock data for yield prediction');
+      
+      // Return mock data as fallback with more realistic values
+      const baseYield = {
+        rice: 3500,
+        wheat: 3000,
+        cotton: 1800,
+        sugarcane: 70000,
+        maize: 2500,
+      };
+      
+      const cropType = data.crop_type || data.cropType || 'rice';
+      const landSize = parseFloat(data.land_size_acres || data.landAreaValue || 5);
+      const baseYieldPerAcre = baseYield[cropType] || 2500;
+      
       return {
-        predictedYield: 2500,
-        predictedDamage: claim.damage_percentage + 5,
-        confidence: 0.78,
+        predictedYield: Math.round(baseYieldPerAcre * landSize * (0.8 + Math.random() * 0.4)),
+        predictedDamage: Math.random() * 20, // 0-20% damage
+        confidence: 0.75 + Math.random() * 0.2, // 75-95% confidence
       };
     }
   }

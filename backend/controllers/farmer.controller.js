@@ -112,7 +112,7 @@ class FarmerController {
         return res.status(400).json({ error: 'Crop type and land area are required' });
       }
 
-      const landSizeAcres = this.convertToAcres(parseFloat(landAreaValue), landAreaUnit);
+      const landSizeAcres = FarmerController.convertToAcres(parseFloat(landAreaValue), landAreaUnit);
 
       const prediction = await MLService.predictYield({
         crop_type: cropType,
@@ -171,7 +171,7 @@ class FarmerController {
   }
 
   // Helper: convert land area to acres
-  convertToAcres(value, unit = 'acre') {
+  static convertToAcres(value, unit = 'acre') {
     if (!value) return 0;
     switch (unit) {
       case 'acre':
