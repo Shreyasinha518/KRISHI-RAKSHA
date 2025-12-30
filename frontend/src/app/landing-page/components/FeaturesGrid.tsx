@@ -35,7 +35,7 @@ const FeaturesGrid = () => {
     },
     {
       icon: 'LanguageIcon',
-      title: 'Regional Language Support',
+      title: 'Future Goal For Regional Language Support',
       description: 'Access the platform in 12+ Indian regional languages including Hindi, Tamil, Telugu, and more for seamless user experience.',
       color: 'text-primary',
     },

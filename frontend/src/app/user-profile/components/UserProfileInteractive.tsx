@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import ProfileHeader from './ProfileHeader';
 import FarmInformation from './FarmInformation';
 import ActivityTimeline from './ActivityTimeline';
-import DocumentUpload from './DocumentUpload';
 
 interface LandParcel {
   id: string;
@@ -39,14 +38,14 @@ interface Document {
 const UserProfileInteractive = () => {
   const [isHydrated, setIsHydrated] = useState(false);
   const [user, setUser] = useState({
-    name: 'Rajesh Kumar',
-    email: 'rajesh.kumar@example.com',
-    phone: '+91 98765 43210',
-    avatar: "https://img.rocket.new/generatedImages/rocket_gen_img_178fd24ab-1763293417052.png",
-    avatarAlt: 'Middle-aged Indian farmer with grey beard wearing white kurta and turban smiling at camera in agricultural field',
-    language: 'en',
-    joinedDate: 'January 2024'
-  });
+  name: '',
+  email: '',
+  phone: '',
+  avatar: '',
+  avatarAlt: '',
+  language: 'en',
+  joinedDate: ''
+});
 
   const [parcels, setParcels] = useState<LandParcel[]>([
   {
@@ -217,7 +216,7 @@ const UserProfileInteractive = () => {
         <ProfileHeader
           user={user}
           onAvatarUpload={handleAvatarUpload}
-          onLanguageChange={handleLanguageChange} />
+          />
 
 
         <FarmInformation
@@ -227,12 +226,7 @@ const UserProfileInteractive = () => {
           onDeleteParcel={handleDeleteParcel} />
 
 
-        <DocumentUpload
-          documents={documents}
-          onUpload={handleDocumentUpload}
-          onDelete={handleDocumentDelete} />
-
-
+       
         <ActivityTimeline activities={activities} />
       </div>
     </div>);

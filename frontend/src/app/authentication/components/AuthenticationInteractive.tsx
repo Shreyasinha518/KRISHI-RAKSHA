@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation';
 import AuthTabs from './AuthTabs';
 import LoginForm from './LoginForm';
 import RegisterForm from './RegisterForm';
+import OTPVerification from './OTPVerification';
 
-import TrustIndicators from './TrustIndicators';
 
 
 interface LoginFormData {
@@ -44,6 +44,8 @@ interface Testimonial {
 const AuthenticationInteractive = () => {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
+  const [authStep, setAuthStep] = useState<'form' | 'otp'>('form');
+  const [pendingMobile, setPendingMobile] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [isHydrated, setIsHydrated] = useState(false);
@@ -99,18 +101,27 @@ const AuthenticationInteractive = () => {
     }, 1500);
   };
 
-  const handleRegister = (data: RegisterFormData) => {
-    setIsLoading(true);
-    setErrorMessage('');
+ const handleRegister = async (data: RegisterFormData) => {
+  setIsLoading(true);
+  setErrorMessage('');
 
-    setTimeout(() => {
-      if (isHydrated && typeof window !== 'undefined') {
-        localStorage.setItem('isAuthenticated', 'true');
-        localStorage.setItem('userName', data.fullName);
-      }
-      router.push('/main-dashboard');
-    }, 2000);
-  };
+  // 🔐 Call backend to register & send OTP
+  const res = await fetch('/api/auth/register', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+
+  if (res.ok) {
+    setPendingMobile(data.mobile); // save mobile for OTP
+    setAuthStep('otp');            // 🔥 move to OTP screen
+  } else {
+    setErrorMessage('Registration failed. Please try again.');
+  }
+
+  setIsLoading(false);
+};
+
 
   const handleSocialLogin = (provider: 'google' | 'facebook') => {
     setIsLoading(true);
@@ -156,11 +167,22 @@ const AuthenticationInteractive = () => {
               </div>
             }
 
-            {activeTab === 'login' ?
-            <LoginForm onSubmit={handleLogin} isLoading={isLoading} /> :
+            {authStep === 'form' ? (
+  activeTab === 'login' ? (
+    <LoginForm onSubmit={handleLogin} isLoading={isLoading} />
+  ) : (
+    <RegisterForm onSubmit={handleRegister} isLoading={isLoading} />
+  )
+) : (
+  <OTPVerification
+    mobile={pendingMobile}
+    onVerified={() => {
+      localStorage.setItem('isAuthenticated', 'true');
+      router.push('/main-dashboard');
+    }}
+  />
+)}
 
-            <RegisterForm onSubmit={handleRegister} isLoading={isLoading} />
-            }
 
             <div className="mt-6">
              
@@ -181,9 +203,7 @@ const AuthenticationInteractive = () => {
 
           {/* Right Column - Trust Indicators & Testimonials */}
           <div className="space-y-6">
-            <div className="bg-card rounded-2xl shadow-card p-6">
-              <TrustIndicators />
-            </div>
+            
 
             
             
