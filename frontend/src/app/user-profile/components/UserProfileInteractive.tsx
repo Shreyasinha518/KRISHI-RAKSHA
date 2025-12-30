@@ -24,6 +24,7 @@ interface Activity {
   description: string;
   timestamp: string;
   status?: 'success' | 'pending' | 'failed';
+  date?: Date; // Store actual date for sorting
 }
 
 interface Document {
@@ -68,95 +69,209 @@ const UserProfileInteractive = () => {
   });
 
   const [parcels, setParcels] = useState<LandParcel[]>([]);
+  const [activities, setActivities] = useState<Activity[]>([]);
 
-  const [activities] = useState<Activity[]>([
-  {
-    id: '1',
-    type: 'claim',
-    title: 'Claim Submitted',
-    description: 'Crop damage claim for Parcel #1 submitted successfully',
-    timestamp: '2 hours ago',
-    status: 'pending'
-  },
-  {
-    id: '2',
-    type: 'prediction',
-    title: 'Yield Prediction Generated',
-    description: 'AI prediction completed for Rice crop - Expected yield: 4.2 tons/acre',
-    timestamp: '1 day ago',
-    status: 'success'
-  },
-  {
-    id: '3',
-    type: 'payment',
-    title: 'Payment Received',
-    description: 'Insurance payout of ₹1,25,000 credited to your account',
-    timestamp: '3 days ago',
-    status: 'success'
-  },
-  {
-    id: '4',
-    type: 'document',
-    title: 'Document Verified',
-    description: 'Land ownership certificate verified successfully',
-    timestamp: '5 days ago',
-    status: 'success'
-  },
-  {
-    id: '5',
-    type: 'profile',
-    title: 'Profile Updated',
-    description: 'Contact information and farm details updated',
-    timestamp: '1 week ago',
-    status: 'success'
-  },
-  {
-    id: '6',
-    type: 'prediction',
-    title: 'Risk Assessment',
-    description: 'Low risk detected for Cotton crop in Parcel #2',
-    timestamp: '1 week ago',
-    status: 'success'
-  }]
-  );
-
-  const [documents, setDocuments] = useState<Document[]>([
-  {
-    id: '1',
-    name: 'Land_Ownership_Certificate.pdf',
-    type: 'PDF',
-    size: '2.4 MB',
-    uploadDate: '15 Dec 2024',
-    status: 'verified',
-    preview: "https://img.rocket.new/generatedImages/rocket_gen_img_1325dcaa7-1764671154592.png",
-    previewAlt: 'Scanned document showing official land ownership certificate with government seal'
-  },
-  {
-    id: '2',
-    name: 'Aadhaar_Card.jpg',
-    type: 'JPG',
-    size: '1.8 MB',
-    uploadDate: '15 Dec 2024',
-    status: 'verified',
-    preview: "https://img.rocket.new/generatedImages/rocket_gen_img_1ff1a1fb0-1764678637382.png",
-    previewAlt: 'Scanned copy of Aadhaar card identity document with masked details'
-  },
-  {
-    id: '3',
-    name: 'Farm_Photo_2024.jpg',
-    type: 'JPG',
-    size: '3.1 MB',
-    uploadDate: '10 Dec 2024',
-    status: 'pending',
-    preview: "https://img.rocket.new/generatedImages/rocket_gen_img_1cc1152c7-1764654292500.png",
-    previewAlt: 'Aerial view of green agricultural farmland with irrigation channels and crop rows'
-  }]
-  );
+  const [documents, setDocuments] = useState<Document[]>([]);
 
   useEffect(() => {
     setIsHydrated(true);
     fetchFarmerData();
+    fetchActivities();
   }, []);
+
+  // Helper function to parse date from various formats
+  const parseDate = (dateString: string): Date | null => {
+    if (!dateString) return null;
+    
+    try {
+      // Try ISO format first
+      let date = new Date(dateString);
+      if (!isNaN(date.getTime())) return date;
+      
+      // Try DD/MM/YYYY format
+      const parts = dateString.split('/');
+      if (parts.length === 3) {
+        date = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
+        if (!isNaN(date.getTime())) return date;
+      }
+      
+      // Try DD-MM-YYYY format
+      const parts2 = dateString.split('-');
+      if (parts2.length === 3) {
+        date = new Date(`${parts2[2]}-${parts2[1]}-${parts2[0]}`);
+        if (!isNaN(date.getTime())) return date;
+      }
+      
+      return null;
+    } catch {
+      return null;
+    }
+  };
+
+  // Helper function to format relative time
+  const formatRelativeTime = (dateString: string | Date): string => {
+    if (!dateString) return 'Recently';
+    
+    try {
+      const date = dateString instanceof Date ? dateString : parseDate(dateString);
+      if (!date) return 'Recently';
+      
+      const now = new Date();
+      const diffMs = now.getTime() - date.getTime();
+      const diffMins = Math.floor(diffMs / 60000);
+      const diffHours = Math.floor(diffMs / 3600000);
+      const diffDays = Math.floor(diffMs / 86400000);
+      const diffWeeks = Math.floor(diffDays / 7);
+      const diffMonths = Math.floor(diffDays / 30);
+
+      if (diffMins < 1) return 'Just now';
+      if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
+      if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+      if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+      if (diffWeeks < 4) return `${diffWeeks} week${diffWeeks > 1 ? 's' : ''} ago`;
+      if (diffMonths < 12) return `${diffMonths} month${diffMonths > 1 ? 's' : ''} ago`;
+      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    } catch {
+      return 'Recently';
+    }
+  };
+
+  // Fetch and transform activities from backend data
+  const fetchActivities = async () => {
+    try {
+      const activitiesList: Activity[] = [];
+
+      // Check authentication
+      if (typeof window === 'undefined') return;
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      // Fetch claims
+      try {
+        const claimsResponse = await apiClient.getClaims();
+        if (claimsResponse.success && claimsResponse.claims) {
+          claimsResponse.claims.forEach((claim: any) => {
+            // Parse submission date - handle multiple formats
+            let submissionDate = parseDate(claim.submissionDate || claim.incidentDate);
+            if (!submissionDate) {
+              // Fallback to current date if parsing fails
+              submissionDate = new Date();
+            }
+
+            // Claim submission activity
+            const claimStatus = claim.status || 'pending';
+            const statusMap: Record<string, 'success' | 'pending' | 'failed'> = {
+              'paid': 'success',
+              'approved': 'success',
+              'rejected': 'failed',
+              'pending': 'pending',
+              'under_review': 'pending',
+              'ml_verification': 'pending',
+            };
+
+            const cropName = claim.cropType ? claim.cropType.charAt(0).toUpperCase() + claim.cropType.slice(1) : 'Crop';
+            const claimDescription = `${cropName} damage claim${claim.affectedArea ? ` for ${claim.affectedArea} acres` : ''}${claim.claimedAmount ? ` - ₹${claim.claimedAmount.toLocaleString('en-IN')}` : ''}${claim.mlApproved === false ? ' - ML verification failed' : claim.mlApproved === true ? ' - ML verified' : ''}`;
+
+            activitiesList.push({
+              id: `claim-${claim.id}`,
+              type: 'claim',
+              title: `Claim ${claimStatus === 'paid' ? 'Paid' : claimStatus === 'approved' ? 'Approved' : claimStatus === 'rejected' ? 'Rejected' : 'Submitted'}`,
+              description: claimDescription,
+              timestamp: formatRelativeTime(submissionDate),
+              status: statusMap[claimStatus] || 'pending',
+              date: submissionDate,
+            });
+
+            // Payment activity for paid claims
+            if (claimStatus === 'paid' && claim.claimedAmount) {
+              activitiesList.push({
+                id: `payment-${claim.id}`,
+                type: 'payment',
+                title: 'Payment Received',
+                description: `Insurance payout of ₹${claim.claimedAmount.toLocaleString('en-IN')} credited to your account${claim.blockchainTxHash ? ' (Blockchain verified)' : ''}`,
+                timestamp: formatRelativeTime(submissionDate),
+                status: 'success',
+                date: submissionDate,
+              });
+            }
+          });
+        }
+      } catch (claimsError) {
+        console.warn('Failed to fetch claims for activity timeline:', claimsError);
+      }
+
+      // Fetch dashboard stats for predictions
+      try {
+        const dashboardResponse = await apiClient.getDashboard();
+        if (dashboardResponse.success && dashboardResponse.dashboard) {
+          const stats = dashboardResponse.dashboard.stats;
+          
+          // Parse last updated date
+          let lastUpdatedDate = stats.lastUpdated ? parseDate(stats.lastUpdated) : null;
+          if (!lastUpdatedDate) {
+            lastUpdatedDate = new Date(); // Fallback to current date
+          }
+          const cropName = dashboardResponse.dashboard.farmer.cropType 
+            ? dashboardResponse.dashboard.farmer.cropType.charAt(0).toUpperCase() + dashboardResponse.dashboard.farmer.cropType.slice(1) 
+            : '';
+
+          // Yield prediction activity
+          if (stats.predictedYield && stats.predictedYield > 0) {
+            activitiesList.push({
+              id: 'prediction-yield',
+              type: 'prediction',
+              title: 'Yield Prediction Generated',
+              description: `AI prediction completed${cropName ? ` for ${cropName} crop` : ''} - Expected yield: ${stats.predictedYield.toFixed(1)} ${stats.yieldUnit || 'quintals'}${stats.riskScore !== undefined ? ` (Risk score: ${stats.riskScore}/100)` : ''}`,
+              timestamp: formatRelativeTime(lastUpdatedDate),
+              status: stats.riskScore && stats.riskScore > 70 ? 'pending' : 'success',
+              date: lastUpdatedDate,
+            });
+          }
+
+          // Risk assessment activity (only if different from yield prediction or if no yield prediction)
+          if (stats.riskScore !== undefined && (!stats.predictedYield || stats.predictedYield === 0)) {
+            const riskLevel = stats.riskScore <= 30 ? 'Low' : stats.riskScore <= 70 ? 'Medium' : 'High';
+            activitiesList.push({
+              id: 'prediction-risk',
+              type: 'prediction',
+              title: 'Risk Assessment',
+              description: `${riskLevel} risk detected${cropName ? ` for ${cropName} crop` : ''} - Risk score: ${stats.riskScore}/100`,
+              timestamp: formatRelativeTime(lastUpdatedDate),
+              status: stats.riskScore > 70 ? 'pending' : 'success',
+              date: lastUpdatedDate,
+            });
+          }
+        }
+      } catch (dashboardError) {
+        console.warn('Failed to fetch dashboard for activity timeline:', dashboardError);
+      }
+
+      // Profile update activity (from farmer data)
+      if (farmerData) {
+        activitiesList.push({
+          id: 'profile-created',
+          type: 'profile',
+          title: 'Profile Created',
+          description: `Account created${farmerData.isPhoneVerified && farmerData.isEmailVerified ? ' - Phone and email verified' : farmerData.isPhoneVerified ? ' - Phone verified' : farmerData.isEmailVerified ? ' - Email verified' : ''}`,
+          timestamp: 'Account created',
+          status: 'success',
+          date: new Date(), // Use current date as fallback
+        });
+      }
+
+      // Sort activities by date (most recent first)
+      activitiesList.sort((a, b) => {
+        const dateA = a.date?.getTime() || 0;
+        const dateB = b.date?.getTime() || 0;
+        return dateB - dateA; // Most recent first
+      });
+
+      setActivities(activitiesList);
+    } catch (error: any) {
+      console.error('Failed to fetch activities:', error);
+      // Don't set error state - activities are optional
+    }
+  };
 
   const fetchFarmerData = async () => {
     try {
@@ -203,6 +318,9 @@ const UserProfileInteractive = () => {
           };
           setParcels([initialParcel]);
         }
+
+        // Fetch activities after farmer data is loaded
+        await fetchActivities();
       }
     } catch (error: any) {
       console.error('Failed to fetch farmer data:', error);

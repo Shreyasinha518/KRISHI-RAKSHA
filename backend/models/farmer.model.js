@@ -30,32 +30,44 @@ class FarmerModel {
     // Hash password
     const passwordHash = await bcrypt.hash(password, 10);
 
+    // Build insert object with only provided fields (exclude undefined/null values)
+    const insertData = {
+      phone,
+      email,
+      password_hash: passwordHash,
+      name,
+      village: village || null,
+      district: district || null,
+      state: state || null,
+      land_size_acres: landSizeAcres || null,
+      crop_type: cropType || null,
+      upi_id: upiId || null,
+      bank_account_number: bankAccountNumber || null,
+      bank_ifsc_code: bankIfscCode || null,
+      bank_name: bankName || null,
+      metamask_address: metamaskAddress || null,
+    };
+
+    // Photo URLs - only include if columns exist in your schema
+    // If you get errors about these columns, either:
+    // 1. Add them to your Supabase farmers table, OR
+    // 2. Remove these lines
+    // For now, we'll skip them to avoid schema errors
+    // if (farmerPhotoUrl) {
+    //   insertData.farmer_photo_url = farmerPhotoUrl;
+    // }
+    // farm_photo_url removed - column doesn't exist in schema
+
     const { data, error } = await supabase
       .from('farmers')
-      .insert([
-        {
-          phone,
-          email,
-          password_hash: passwordHash,
-          name,
-          village,
-          district,
-          state,
-          land_size_acres: landSizeAcres,
-          crop_type: cropType,
-          farmer_photo_url: farmerPhotoUrl,
-          farm_photo_url: farmPhotoUrl,
-          upi_id: upiId,
-          bank_account_number: bankAccountNumber,
-          bank_ifsc_code: bankIfscCode,
-          bank_name: bankName,
-          metamask_address: metamaskAddress,
-        },
-      ])
+      .insert([insertData])
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('Farmer creation error:', error);
+      throw error;
+    }
     return data;
   }
 
@@ -97,14 +109,40 @@ class FarmerModel {
 
   // Update farmer
   static async update(id, updates) {
+    // Filter out undefined/null values and non-existent columns
+    const cleanUpdates = {};
+    const allowedFields = [
+      'name', 'village', 'district', 'state', 'land_size_acres', 'crop_type',
+      'upi_id', 'bank_account_number', 'bank_ifsc_code', 'bank_name',
+      'metamask_address', 'is_phone_verified', 'is_email_verified',
+      // Photo URL fields removed - may not exist in schema
+      // 'farmer_photo_url', 'farm_photo_url'
+    ];
+
+    Object.keys(updates).forEach((key) => {
+      // Convert camelCase to snake_case
+      const snakeKey = key.replace(/([A-Z])/g, '_$1').toLowerCase();
+      if (allowedFields.includes(snakeKey) && updates[key] !== undefined && updates[key] !== null) {
+        cleanUpdates[snakeKey] = updates[key];
+      }
+    });
+
+    // Don't try to update if no valid fields
+    if (Object.keys(cleanUpdates).length === 0) {
+      return await this.findById(id);
+    }
+
     const { data, error } = await supabase
       .from('farmers')
-      .update(updates)
+      .update(cleanUpdates)
       .eq('id', id)
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('Farmer update error:', error);
+      throw error;
+    }
     return data;
   }
 
