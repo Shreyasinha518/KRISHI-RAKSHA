@@ -1,7 +1,7 @@
 // API utility for backend communication
-// Use Next.js API routes as proxy to avoid CORS issues
+// Prefer hitting the backend directly when URL is provided; otherwise fall back to Next.js API proxy
 // The proxy routes at /api/auth/* will forward to the actual backend
-const API_URL = ''; // Empty string means use relative URLs (Next.js API routes as proxy)
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
 // Helper function to format phone number to +91XXXXXXXXXX
 function formatPhoneNumber(phone: string): string {
@@ -62,15 +62,44 @@ class ApiClient {
 
     try {
       const response = await fetch(url, config);
-      const data = await response.json();
+      
+      let data;
+      try {
+        const responseText = await response.text();
+        data = responseText ? JSON.parse(responseText) : {};
+      } catch (parseError) {
+        // If JSON parsing fails, create a more informative error
+        throw new Error(`Failed to parse response: ${response.status} ${response.statusText}. URL: ${url}`);
+      }
 
       if (!response.ok) {
-        throw new Error(data.error || `HTTP error! status: ${response.status}`);
+        let errorMessage = data.error || `HTTP error! status: ${response.status}`;
+        
+        // Provide more helpful error messages
+        if (response.status === 404) {
+          errorMessage = `Route not found: ${endpoint}. Please verify that the backend server is running and has the latest code deployed.`;
+        } else if (response.status === 401) {
+          errorMessage = 'Authentication failed. Please login again.';
+        } else if (response.status === 500) {
+          errorMessage = 'Server error. Please try again later.';
+        }
+        
+        const error = new Error(errorMessage);
+        // Add additional context for debugging
+        (error as any).status = response.status;
+        (error as any).url = url;
+        (error as any).responseData = data;
+        throw error;
       }
 
       return data;
-    } catch (error) {
-      console.error('API request failed:', error);
+    } catch (error: any) {
+      console.error('API request failed:', {
+        error: error.message,
+        url: error.url || url,
+        status: error.status,
+        responseData: error.responseData,
+      });
       throw error;
     }
   }
@@ -190,6 +219,64 @@ class ApiClient {
       };
     }>('/api/auth/me', {
       method: 'GET',
+    });
+  }
+
+  // Dashboard stats
+  async getDashboard() {
+    return this.request<{
+      success: boolean;
+      dashboard: {
+        farmer: {
+          name: string;
+          village?: string;
+          district?: string;
+          state?: string;
+          cropType?: string;
+          landSize?: number;
+        };
+        stats: {
+          totalLandArea: number;
+          landAreaUnit: string;
+          predictedYield: number;
+          yieldUnit: string;
+          riskScore: number;
+          riskScoreUnit: string;
+          activeClaims: number;
+          trend: Record<string, any>;
+          lastUpdated: string | null;
+        };
+        claims: {
+          summary: Record<string, any>;
+          recentClaims: any[];
+        };
+      };
+    }>('/api/farmers/dashboard', {
+      method: 'GET',
+    });
+  }
+
+  // Predict yield and persist dashboard stats
+  async predictYield(data: {
+    cropType: string;
+    landAreaValue: number;
+    landAreaUnit: string;
+    sowingDate?: string;
+    soilType?: string;
+    irrigationType?: string;
+    fertilizerUsage?: number;
+  }) {
+    return this.request<{
+      success: boolean;
+      prediction: {
+        predictedYield: number;
+        confidence: number;
+        riskLevel: 'low' | 'medium' | 'high';
+        recommendations: string[];
+      };
+    }>('/api/farmers/predict-yield', {
+      method: 'POST',
+      body: JSON.stringify(data),
     });
   }
 }

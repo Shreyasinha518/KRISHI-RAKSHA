@@ -9,12 +9,12 @@ export const metadata: Metadata = {
 };
 
 export default function MainDashboardPage() {
+  // Authentication check happens client-side in DashboardInteractive
   return (
     <>
       <Header
         isAuthenticated={true}
-        userName="Rajesh Kumar"
-        userAvatar="https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=400"
+        userName="User"
         isMetaMaskConnected={false}
       />
       <NavigationBreadcrumb />

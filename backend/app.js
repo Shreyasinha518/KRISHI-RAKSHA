@@ -48,18 +48,25 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Import routes
-const authRoutes = require('./routes/auth.routes');
-const farmerRoutes = require('./routes/farmer.routes');
-const claimRoutes = require('./routes/claim.routes');
-const blockchainRoutes = require('./routes/blockchain.routes');
-const payoutRoutes = require('./routes/payout.routes');
+try {
+  const authRoutes = require('./routes/auth.routes');
+  const farmerRoutes = require('./routes/farmer.routes');
+  const claimRoutes = require('./routes/claim.routes');
+  const blockchainRoutes = require('./routes/blockchain.routes');
+  const payoutRoutes = require('./routes/payout.routes');
 
-// Mount routes
-app.use('/api/auth', authRoutes);
-app.use('/api/farmers', farmerRoutes);
-app.use('/api/claims', claimRoutes);
-app.use('/api', blockchainRoutes); // blockchain routes at /api/blockchain/...
-app.use('/api/payouts', payoutRoutes);
+  // Mount routes
+  app.use('/api/auth', authRoutes);
+  app.use('/api/farmers', farmerRoutes);
+  app.use('/api/claims', claimRoutes);
+  app.use('/api', blockchainRoutes); // blockchain routes at /api/blockchain/...
+  app.use('/api/payouts', payoutRoutes);
+  
+  console.log('✅ All routes loaded successfully');
+} catch (error) {
+  console.error('❌ Error loading routes:', error);
+  throw error;
+}
 
 // Update the health check route
 app.get('/health', (req, res) => {

@@ -11,6 +11,9 @@ const { verifyToken } = require('../middleware/auth.middleware');
 // Get farmer dashboard (protected)
 router.get('/dashboard', verifyToken, farmerController.getDashboard);
 
+// Predict yield and persist dashboard stats (protected)
+router.post('/predict-yield', verifyToken, farmerController.predictYield);
+
 // Update profile (protected)
 router.put('/profile', verifyToken, farmerController.updateProfile);
 

@@ -62,6 +62,9 @@ async function startServer() {
     console.log('  POST /api/auth/login');
     console.log('  GET  /api/auth/me');
     console.log('  GET  /api/farmers/dashboard');
+    console.log('  POST /api/farmers/predict-yield');
+    console.log('  PUT  /api/farmers/profile');
+    console.log('  GET  /api/farmers/:id');
     console.log('  POST /api/claims');
     console.log('  GET  /api/claims');
     console.log('  GET  /api/blockchain/claim/:claimId');

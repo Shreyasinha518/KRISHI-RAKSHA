@@ -5,7 +5,8 @@ import Icon from '@/components/ui/AppIcon';
 
 interface FormData {
   cropType: string;
-  landArea: string;
+  landAreaValue: number;
+  landAreaUnit: string;
   sowingDate: string;
   soilType: string;
   irrigationType: string;
@@ -20,14 +21,13 @@ interface YieldPredictionFormProps {
 const YieldPredictionForm = ({ onSubmit, isLoading }: YieldPredictionFormProps) => {
   const [formData, setFormData] = useState<FormData>({
     cropType: '',
-    landArea: '',
+    landAreaValue: 0,
+    landAreaUnit: 'acre',
     sowingDate: '',
     soilType: '',
     irrigationType: '',
     fertilizerUsage: 50,
   });
-  const [landAreaValue, setLandAreaValue] = useState<string>('');
-  const [landAreaUnit, setLandAreaUnit] = useState<string>('acre');
 
   const cropTypes = [
     { value: 'rice', label: 'Rice (धान)' },
@@ -56,7 +56,7 @@ const YieldPredictionForm = ({ onSubmit, isLoading }: YieldPredictionFormProps) 
     e.preventDefault();
     const payload = {
       ...formData,
-      landArea: `${landAreaValue} ${landAreaUnit}`,
+      landAreaValue: Number(formData.landAreaValue),
     };
     onSubmit(payload);
   };
@@ -103,8 +103,8 @@ const YieldPredictionForm = ({ onSubmit, isLoading }: YieldPredictionFormProps) 
             <input
               type="number"
               id="landAreaValue"
-              value={landAreaValue}
-              onChange={(e) => setLandAreaValue(e.target.value)}
+              value={formData.landAreaValue || ''}
+              onChange={(e) => setFormData((prev) => ({ ...prev, landAreaValue: Number(e.target.value) }))}
               placeholder="e.g., 5"
               min="0.1"
               step="0.1"
@@ -117,8 +117,8 @@ const YieldPredictionForm = ({ onSubmit, isLoading }: YieldPredictionFormProps) 
             <label htmlFor="landAreaUnit" className="block text-sm font-body font-medium text-foreground mb-2 opacity-0">Unit</label>
             <select
               id="landAreaUnit"
-              value={landAreaUnit}
-              onChange={(e) => setLandAreaUnit(e.target.value)}
+              value={formData.landAreaUnit}
+              onChange={(e) => setFormData((prev) => ({ ...prev, landAreaUnit: e.target.value }))}
               required
               className="w-full px-4 py-2.5 bg-background border border-input rounded-md text-foreground font-body focus:outline-none focus:ring-2 focus:ring-ring transition-all duration-200"
             >

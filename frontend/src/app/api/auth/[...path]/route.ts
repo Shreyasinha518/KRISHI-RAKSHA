@@ -3,7 +3,8 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'https://krishi-raksha-backend.onrender.com';
+// Prefer explicit backend URL for local/dev usage; default to hosted backend if not provided
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
 export async function POST(
   request: NextRequest,
