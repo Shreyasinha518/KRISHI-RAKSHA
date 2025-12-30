@@ -4,6 +4,11 @@
 
 // Validate phone number
 exports.validatePhone = (req, res, next) => {
+  // Check if req.body exists
+  if (!req.body) {
+    return res.status(400).json({ error: 'Request body is required' });
+  }
+  
   const { phone } = req.body;
   
   if (!phone) {
@@ -22,6 +27,11 @@ exports.validatePhone = (req, res, next) => {
 
 // Validate email
 exports.validateEmail = (req, res, next) => {
+  // Check if req.body exists
+  if (!req.body) {
+    return res.status(400).json({ error: 'Request body is required' });
+  }
+  
   const { email } = req.body;
   
   if (!email) {
@@ -39,6 +49,11 @@ exports.validateEmail = (req, res, next) => {
 
 // Validate OTP
 exports.validateOTP = (req, res, next) => {
+  // Check if req.body exists
+  if (!req.body) {
+    return res.status(400).json({ error: 'Request body is required' });
+  }
+  
   const { otp } = req.body;
   
   if (!otp) {

@@ -9,16 +9,43 @@ const cors = require('cors');
 const app = express();
 
 // Middleware
-// Update your CORS configuration in app.js (around line 9)
+// CORS configuration
 app.use(cors({
-  origin: [
-    'http://localhost:3000',  // Local development
-    'https://your-frontend-domain.com'  // Your production frontend URL
-  ],
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps, curl, Postman)
+    if (!origin) return callback(null, true);
+    
+    // Allow localhost on any port for development
+    if (origin.startsWith('http://localhost:') || origin.startsWith('https://localhost:')) {
+      return callback(null, true);
+    }
+    
+    // Allow specific production domains
+    const allowedOrigins = [
+      'https://your-frontend-domain.com',  // Your production frontend URL
+      // Add more production URLs here
+    ];
+    
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    
+    // For Render deployment, allow the frontend domain
+    if (origin.includes('onrender.com') || origin.includes('vercel.app') || origin.includes('netlify.app')) {
+      return callback(null, true);
+    }
+    
+    callback(new Error('Not allowed by CORS'));
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true
+  credentials: true,
+  optionsSuccessStatus: 200 // Some legacy browsers (IE11) choke on 204
 }));
+
+// Body parsing middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Import routes
 const authRoutes = require('./routes/auth.routes');

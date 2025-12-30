@@ -6,8 +6,7 @@ import AuthTabs from './AuthTabs';
 import LoginForm from './LoginForm';
 import RegisterForm from './RegisterForm';
 import OTPVerification from './OTPVerification';
-
-
+import { apiClient } from '@/lib/api';
 
 interface LoginFormData {
   identifier: string;
@@ -21,13 +20,18 @@ interface RegisterFormData {
   password: string;
   confirmPassword: string;
   farmLocation: string;
-  landArea: string;
+  landArea?: string;
+  landAreaValue?: string;
+  landAreaUnit?: string;
   primaryCrop: string;
   termsAccepted: boolean;
   // Bank details
   bankName?: string;
   accountHolderName?: string;
   ifscCode?: string;
+  accountNumber?: string;
+  upiId?: string;
+  bankMobile?: string;
   accountType?: 'savings' | 'current' | '';
   aadhaarNumber?: string;
 }
@@ -46,6 +50,8 @@ const AuthenticationInteractive = () => {
   const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
   const [authStep, setAuthStep] = useState<'form' | 'otp'>('form');
   const [pendingMobile, setPendingMobile] = useState<string>('');
+  const [pendingEmail, setPendingEmail] = useState<string>('');
+  const [pendingRegisterData, setPendingRegisterData] = useState<RegisterFormData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [isHydrated, setIsHydrated] = useState(false);
@@ -54,74 +60,172 @@ const AuthenticationInteractive = () => {
     setIsHydrated(true);
   }, []);
 
-  const mockCredentials = {
-    identifier: 'farmer@agriinsure.com',
-    password: 'farmer123'
-  };
+  // Reset form step when switching tabs
+  useEffect(() => {
+    setAuthStep('form');
+    setErrorMessage('');
+    setPendingRegisterData(null);
+  }, [activeTab]);
 
   const testimonials: Testimonial[] = [
-  {
-    name: 'Rajesh Kumar',
-    location: 'Punjab',
-    image: "https://img.rocket.new/generatedImages/rocket_gen_img_1d7437585-1763294112440.png",
-    alt: 'Middle-aged Indian farmer in white turban and blue shirt standing in wheat field',
-    rating: 5,
-    text: 'AgriInsure helped me get instant payout when my crop failed. Very easy to use!'
-  },
-  {
-    name: 'Lakshmi Devi',
-    location: 'Tamil Nadu',
-    image: "https://images.unsplash.com/photo-1709207516801-c8cd368ca089",
-    alt: 'Indian woman farmer in green saree with red border smiling in rice paddy field',
-    rating: 5,
-    text: 'The AI prediction saved my harvest. I got early warning about pest attack.'
-  }];
+    {
+      name: 'Rajesh Kumar',
+      location: 'Punjab',
+      image: "https://img.rocket.new/generatedImages/rocket_gen_img_1d7437585-1763294112440.png",
+      alt: 'Middle-aged Indian farmer in white turban and blue shirt standing in wheat field',
+      rating: 5,
+      text: 'AgriInsure helped me get instant payout when my crop failed. Very easy to use!'
+    },
+    {
+      name: 'Lakshmi Devi',
+      location: 'Tamil Nadu',
+      image: "https://images.unsplash.com/photo-1709207516801-c8cd368ca089",
+      alt: 'Indian woman farmer in green saree with red border smiling in rice paddy field',
+      rating: 5,
+      text: 'The AI prediction saved my harvest. I got early warning about pest attack.'
+    }
+  ];
 
-
-  const handleLogin = (data: LoginFormData) => {
+  const handleLogin = async (data: LoginFormData) => {
     setIsLoading(true);
     setErrorMessage('');
 
-    setTimeout(() => {
-      if (
-      data.identifier === mockCredentials.identifier &&
-      data.password === mockCredentials.password)
-      {
-        if (isHydrated && typeof window !== 'undefined') {
-          localStorage.setItem('isAuthenticated', 'true');
-          localStorage.setItem('userName', 'Rajesh Kumar');
-        }
-        router.push('/main-dashboard');
+    try {
+      // Extract phone number from identifier (can be phone or email)
+      let phone = data.identifier;
+      
+      // If it's an email, we need to handle it differently
+      // For now, backend expects phone number, so we'll use identifier as-is
+      // If it's a phone number format (10 digits), use it directly
+      if (/^[6-9]\d{9}$/.test(data.identifier)) {
+        phone = data.identifier;
       } else {
-        setErrorMessage(
-          `Invalid credentials. Use email: ${mockCredentials.identifier} and password: ${mockCredentials.password}`
-        );
+        // If it's an email, show error (backend currently requires phone)
+        setErrorMessage('Please login with your phone number');
         setIsLoading(false);
+        return;
       }
-    }, 1500);
+
+      const response = await apiClient.login(phone, data.password);
+      
+      // Store token and user info
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('token', response.token);
+        localStorage.setItem('isAuthenticated', 'true');
+        localStorage.setItem('userName', response.farmer.name);
+        localStorage.setItem('userId', response.farmer.id);
+      }
+      
+      router.push('/main-dashboard');
+    } catch (error: any) {
+      setErrorMessage(error.message || 'Invalid credentials. Please try again.');
+      setIsLoading(false);
+    }
   };
 
- const handleRegister = async (data: RegisterFormData) => {
-  setIsLoading(true);
-  setErrorMessage('');
+  const handleRegister = async (data: RegisterFormData) => {
+    setIsLoading(true);
+    setErrorMessage('');
 
-  // 🔐 Call backend to register & send OTP
-  const res = await fetch('/api/auth/register', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-  });
+    try {
+      // Store registration data for later use
+      setPendingRegisterData(data);
+      setPendingMobile(data.mobile);
+      setPendingEmail(data.email);
 
-  if (res.ok) {
-    setPendingMobile(data.mobile); // save mobile for OTP
-    setAuthStep('otp');            // 🔥 move to OTP screen
-  } else {
-    setErrorMessage('Registration failed. Please try again.');
-  }
+      // Move to OTP verification step
+      // OTPs will be sent automatically when OTPVerification component mounts
+      setAuthStep('otp');
+      setIsLoading(false);
+    } catch (error: any) {
+      setErrorMessage(error.message || 'Failed to start registration. Please try again.');
+      setIsLoading(false);
+    }
+  };
 
-  setIsLoading(false);
-};
+  const handleOTPVerified = async () => {
+    if (!pendingRegisterData) {
+      setErrorMessage('Registration data not found. Please try again.');
+      setAuthStep('form');
+      return;
+    }
 
+    setIsLoading(true);
+    setErrorMessage('');
+
+    try {
+      // Convert land area to acres if needed
+      let landSizeAcres = 0;
+      if (pendingRegisterData.landAreaValue && pendingRegisterData.landAreaUnit) {
+        const value = parseFloat(pendingRegisterData.landAreaValue);
+        const unit = pendingRegisterData.landAreaUnit;
+        
+        // Convert to acres (approximate conversions)
+        switch (unit) {
+          case 'acre':
+            landSizeAcres = value;
+            break;
+          case 'hectare':
+            landSizeAcres = value * 2.47105;
+            break;
+          case 'bigha':
+            landSizeAcres = value * 0.6198; // Approximate for India
+            break;
+          case 'katha':
+            landSizeAcres = value * 0.06198;
+            break;
+          case 'kanal':
+            landSizeAcres = value * 0.125;
+            break;
+          case 'marla':
+            landSizeAcres = value * 0.00625;
+            break;
+          case 'guntha':
+            landSizeAcres = value * 0.025;
+            break;
+          case 'cent':
+            landSizeAcres = value * 0.01;
+            break;
+          default:
+            landSizeAcres = value;
+        }
+      }
+
+      // Prepare registration payload
+      const registrationData = {
+        phone: pendingRegisterData.mobile,
+        email: pendingRegisterData.email,
+        password: pendingRegisterData.password,
+        name: pendingRegisterData.fullName,
+        village: '', // Not in current form
+        district: '', // Not in current form
+        state: pendingRegisterData.farmLocation,
+        landSizeAcres: landSizeAcres,
+        cropType: pendingRegisterData.primaryCrop,
+        upiId: pendingRegisterData.upiId || undefined,
+        bankAccountNumber: pendingRegisterData.accountNumber || undefined,
+        bankIfscCode: pendingRegisterData.ifscCode || undefined,
+        bankName: pendingRegisterData.bankName || undefined,
+      };
+
+      const response = await apiClient.register(registrationData);
+
+      // Store token and user info
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('token', response.token);
+        localStorage.setItem('isAuthenticated', 'true');
+        localStorage.setItem('userName', response.farmer.name);
+        localStorage.setItem('userId', response.farmer.id);
+      }
+
+      router.push('/main-dashboard');
+    } catch (error: any) {
+      setErrorMessage(error.message || 'Registration failed. Please try again.');
+      setIsLoading(false);
+      // Optionally go back to form
+      // setAuthStep('form');
+    }
+  };
 
   const handleSocialLogin = (provider: 'google' | 'facebook') => {
     setIsLoading(true);
@@ -140,8 +244,8 @@ const AuthenticationInteractive = () => {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-      </div>);
-
+      </div>
+    );
   }
 
   return (
@@ -161,57 +265,43 @@ const AuthenticationInteractive = () => {
 
             <AuthTabs activeTab={activeTab} onTabChange={setActiveTab} />
 
-            {errorMessage &&
-            <div className="mb-4 p-4 bg-error/10 border border-error rounded-lg">
+            {errorMessage && (
+              <div className="mb-4 p-4 bg-error/10 border border-error rounded-lg">
                 <p className="text-sm font-body text-error">{errorMessage}</p>
               </div>
-            }
+            )}
 
             {authStep === 'form' ? (
-  activeTab === 'login' ? (
-    <LoginForm onSubmit={handleLogin} isLoading={isLoading} />
-  ) : (
-    <RegisterForm onSubmit={handleRegister} isLoading={isLoading} />
-  )
-) : (
-  <OTPVerification
-    mobile={pendingMobile}
-    onVerified={() => {
-      localStorage.setItem('isAuthenticated', 'true');
-      router.push('/main-dashboard');
-    }}
-  />
-)}
-
+              activeTab === 'login' ? (
+                <LoginForm onSubmit={handleLogin} isLoading={isLoading} />
+              ) : (
+                <RegisterForm onSubmit={handleRegister} isLoading={isLoading} />
+              )
+            ) : (
+              <OTPVerification
+                mobile={pendingMobile}
+                email={pendingEmail}
+                onVerified={handleOTPVerified}
+                onBack={() => {
+                  setAuthStep('form');
+                  setErrorMessage('');
+                }}
+              />
+            )}
 
             <div className="mt-6">
-             
+              {/* Additional content can go here */}
             </div>
-
-            {activeTab === 'login' &&
-            <div className="mt-6 p-4 bg-accent/10 border border-accent rounded-lg">
-                <p className="text-sm font-body text-foreground">
-                  <strong>Demo Credentials:</strong>
-                  <br />
-                  Email: {mockCredentials.identifier}
-                  <br />
-                  Password: {mockCredentials.password}
-                </p>
-              </div>
-            }
           </div>
 
           {/* Right Column - Trust Indicators & Testimonials */}
           <div className="space-y-6">
-            
-
-            
-            
+            {/* Trust indicators and testimonials can go here */}
           </div>
         </div>
       </div>
-    </div>);
-
+    </div>
+  );
 };
 
 export default AuthenticationInteractive;
