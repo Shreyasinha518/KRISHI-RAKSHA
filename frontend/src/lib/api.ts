@@ -279,6 +279,120 @@ class ApiClient {
       body: JSON.stringify(data),
     });
   }
+
+  // Claims endpoints
+  async submitClaim(data: {
+    cropType: string;
+    affectedArea: number;
+    incidentDate: string;
+    incidentDescription: string;
+    damageType: string;
+    estimatedLoss: number;
+    sowingDate?: string;
+    soilType?: string;
+    irrigationType?: string;
+    fertilizerUsage?: number;
+    landSizeAcres?: number;
+    photos?: File[];
+    documents?: File[];
+  }) {
+    const formData = new FormData();
+    
+    // Add text fields
+    formData.append('cropType', data.cropType);
+    formData.append('affectedArea', data.affectedArea.toString());
+    formData.append('incidentDate', data.incidentDate);
+    formData.append('incidentDescription', data.incidentDescription);
+    formData.append('damageType', data.damageType);
+    formData.append('estimatedLoss', data.estimatedLoss.toString());
+    
+    if (data.sowingDate) formData.append('sowingDate', data.sowingDate);
+    if (data.soilType) formData.append('soilType', data.soilType);
+    if (data.irrigationType) formData.append('irrigationType', data.irrigationType);
+    if (data.fertilizerUsage) formData.append('fertilizerUsage', data.fertilizerUsage.toString());
+    if (data.landSizeAcres) formData.append('landSizeAcres', data.landSizeAcres.toString());
+    
+    // Add files
+    if (data.photos) {
+      data.photos.forEach((photo) => {
+        formData.append('files', photo);
+      });
+    }
+    if (data.documents) {
+      data.documents.forEach((doc) => {
+        formData.append('files', doc);
+      });
+    }
+
+    // Get token for auth
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    
+    const url = this.baseUrl 
+      ? `${this.baseUrl}/api/claims` 
+      : '/api/claims';
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+      body: formData,
+    });
+
+    const responseData = await response.json();
+    if (!response.ok) {
+      throw new Error(responseData.error || 'Failed to submit claim');
+    }
+    return responseData;
+  }
+
+  async getClaims() {
+    return this.request<{
+      success: boolean;
+      claims: Array<{
+        id: string;
+        submissionDate: string;
+        cropType: string;
+        claimedAmount: number;
+        status: string;
+        affectedArea: number;
+        incidentDate: string;
+        incidentDescription: string;
+        blockchainTxHash?: string;
+        mlApproved?: boolean;
+        mlFraudScore?: number;
+        mlPredictedYield?: number;
+      }>;
+    }>('/api/claims', {
+      method: 'GET',
+    });
+  }
+
+  async getClaimById(id: string) {
+    return this.request<{
+      success: boolean;
+      claim: {
+        id: string;
+        submissionDate: string;
+        cropType: string;
+        claimedAmount: number;
+        status: string;
+        affectedArea: number;
+        incidentDate: string;
+        incidentDescription: string;
+        assessorNotes?: string;
+        photos: Array<{ url: string; alt: string }>;
+        documents: Array<{ name: string; url: string; type: string }>;
+        blockchainTxHash?: string;
+        mlApproved?: boolean;
+        mlFraudScore?: number;
+        mlPredictedYield?: number;
+        mlReason?: string;
+      };
+    }>(`/api/claims/${id}`, {
+      method: 'GET',
+    });
+  }
 }
 
 export const apiClient = new ApiClient(API_URL);

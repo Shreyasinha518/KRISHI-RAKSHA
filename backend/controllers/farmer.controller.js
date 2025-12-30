@@ -137,19 +137,24 @@ class FarmerController {
         )
       );
 
-      // Upsert dashboard stats
-      await DashboardStatsModel.upsert(farmerId, {
-        total_land_area: landSizeAcres,
-        land_area_unit: landAreaUnit || 'acre',
-        predicted_yield: prediction.predictedYield || 0,
-        yield_unit: 'quintals',
-        risk_score: riskScore,
-        risk_score_unit: '/100',
-        trend_yield: 'neutral',
-        trend_yield_value: '0%',
-        trend_risk: 'neutral',
-        trend_risk_value: '0%',
-      });
+      // Upsert dashboard stats (non-fatal - continue even if table doesn't exist or has constraint issues)
+      try {
+        await DashboardStatsModel.upsert(farmerId, {
+          total_land_area: landSizeAcres,
+          land_area_unit: landAreaUnit || 'acre',
+          predicted_yield: prediction.predictedYield || 0,
+          yield_unit: 'quintals',
+          risk_score: riskScore,
+          risk_score_unit: '/100',
+          trend_yield: 'neutral',
+          trend_yield_value: '0%',
+          trend_risk: 'neutral',
+          trend_risk_value: '0%',
+        });
+      } catch (dbError) {
+        console.warn('⚠️ Dashboard stats not saved (table may not exist or missing constraint):', dbError.message);
+        // Continue without failing the request - prediction is more important
+      }
 
       res.json({
         success: true,

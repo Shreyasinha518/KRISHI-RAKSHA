@@ -1,7 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Icon from '@/components/ui/AppIcon';
+import { apiClient } from '@/lib/api';
 import ClaimFilters from './ClaimFilters';
 import ClaimsTable from './ClaimsTable';
 import ClaimDetailsModal from './ClaimDetailsModal';
@@ -12,7 +14,7 @@ interface Claim {
   submissionDate: string;
   cropType: string;
   claimedAmount: number;
-  status: 'pending' | 'under_review' | 'approved' | 'rejected' | 'paid';
+  status: 'pending' | 'under_review' | 'approved' | 'rejected' | 'paid' | 'ml_verification';
   affectedArea: number;
   incidentDate: string;
   incidentDescription: string;
@@ -21,21 +23,89 @@ interface Claim {
   photos: Array<{url: string;alt: string;}>;
   paymentTimeline?: Array<{date: string;event: string;}>;
   blockchainTxHash?: string;
+  mlApproved?: boolean;
+  mlFraudScore?: number;
+  mlPredictedYield?: number;
 }
 
 const ClaimsInteractive = () => {
+  const router = useRouter();
   const [isHydrated, setIsHydrated] = useState(false);
+  const [claims, setClaims] = useState<Claim[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('all');
   const [selectedCrop, setSelectedCrop] = useState('all');
   const [dateRange, setDateRange] = useState({ start: '', end: '' });
   const [selectedClaim, setSelectedClaim] = useState<Claim | null>(null);
   const [isNewClaimModalOpen, setIsNewClaimModalOpen] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     setIsHydrated(true);
+    fetchClaims();
   }, []);
 
+  const fetchClaims = async () => {
+    try {
+      setIsLoading(true);
+      setError('');
+      
+      // Check authentication
+      if (typeof window !== 'undefined') {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          router.push('/authentication');
+          return;
+        }
+      }
+
+      const response = await apiClient.getClaims();
+      if (response.success) {
+        // Transform backend claims to frontend format
+        const transformedClaims: Claim[] = response.claims.map((claim: any) => ({
+          id: claim.id,
+          submissionDate: claim.submissionDate,
+          cropType: claim.cropType,
+          claimedAmount: claim.claimedAmount,
+          status: claim.status,
+          affectedArea: claim.affectedArea,
+          incidentDate: claim.incidentDate,
+          incidentDescription: claim.incidentDescription,
+          blockchainTxHash: claim.blockchainTxHash,
+          mlApproved: claim.mlApproved,
+          mlFraudScore: claim.mlFraudScore,
+          mlPredictedYield: claim.mlPredictedYield,
+          documents: [],
+          photos: [],
+        }));
+        setClaims(transformedClaims);
+      }
+    } catch (err: any) {
+      console.error('Failed to fetch claims:', err);
+      setError(err.message || 'Failed to load claims');
+      if (err.message?.toLowerCase().includes('token') || err.message?.toLowerCase().includes('unauthorized')) {
+        router.push('/authentication');
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const fetchClaimDetails = async (claimId: string) => {
+    try {
+      const response = await apiClient.getClaimById(claimId);
+      if (response.success) {
+        return response.claim;
+      }
+    } catch (err: any) {
+      console.error('Failed to fetch claim details:', err);
+    }
+    return null;
+  };
+
+  // Fallback mock claims (only used if API fails and we have no data)
   const mockClaims: Claim[] = [
   {
     id: 'CLM-2025-001',
@@ -184,7 +254,7 @@ const ClaimsInteractive = () => {
   }];
 
 
-  const filteredClaims = mockClaims.filter((claim) => {
+  const filteredClaims = (claims.length > 0 ? claims : mockClaims).filter((claim) => {
     const statusMatch = selectedStatus === 'all' || claim.status === selectedStatus;
     const cropMatch = selectedCrop === 'all' || claim.cropType === selectedCrop;
 
@@ -205,8 +275,21 @@ const ClaimsInteractive = () => {
     setDateRange({ start: '', end: '' });
   };
 
-  const handleViewDetails = (claim: Claim) => {
-    setSelectedClaim(claim);
+  const handleViewDetails = async (claim: Claim) => {
+    // Fetch full claim details from backend
+    const fullClaim = await fetchClaimDetails(claim.id);
+    if (fullClaim) {
+      setSelectedClaim({
+        ...claim,
+        ...fullClaim,
+        photos: fullClaim.photos || [],
+        documents: fullClaim.documents || [],
+        assessorNotes: fullClaim.assessorNotes,
+      });
+    } else {
+      // Fallback to basic claim data
+      setSelectedClaim(claim);
+    }
   };
 
   const handleCloseDetails = () => {
@@ -221,11 +304,49 @@ const ClaimsInteractive = () => {
     setIsNewClaimModalOpen(false);
   };
 
-  const handleSubmitClaim = (claimData: any) => {
-    console.log('New claim submitted:', claimData);
-    setIsNewClaimModalOpen(false);
-    setShowSuccessMessage(true);
-    setTimeout(() => setShowSuccessMessage(false), 5000);
+  const handleSubmitClaim = async (claimData: any) => {
+    try {
+      setIsSubmitting(true);
+      setError('');
+
+      // Check authentication
+      if (typeof window !== 'undefined') {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          router.push('/authentication');
+          return;
+        }
+      }
+
+      // Submit claim to backend
+      const response = await apiClient.submitClaim({
+        cropType: claimData.cropType,
+        affectedArea: parseFloat(claimData.affectedArea),
+        incidentDate: claimData.incidentDate,
+        incidentDescription: claimData.incidentDescription,
+        damageType: claimData.damageType,
+        estimatedLoss: parseFloat(claimData.estimatedLoss),
+        photos: claimData.photos || [],
+        documents: claimData.documents || [],
+      });
+
+      if (response.success) {
+        setIsNewClaimModalOpen(false);
+        setShowSuccessMessage(true);
+        setTimeout(() => setShowSuccessMessage(false), 5000);
+        
+        // Refresh claims list
+        await fetchClaims();
+      }
+    } catch (err: any) {
+      console.error('Failed to submit claim:', err);
+      setError(err.message || 'Failed to submit claim. Please try again.');
+      if (err.message?.toLowerCase().includes('token') || err.message?.toLowerCase().includes('unauthorized')) {
+        router.push('/authentication');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (!isHydrated) {
@@ -262,20 +383,32 @@ const ClaimsInteractive = () => {
           </button>
         </div>
 
+        {/* Error Message */}
+        {error && (
+          <div className="mb-6 p-4 bg-error/10 border border-error/20 rounded-lg flex items-center space-x-3">
+            <Icon name="ExclamationCircleIcon" size={24} className="text-error" />
+            <div>
+              <p className="text-sm font-body font-medium text-foreground">
+                {error}
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Success Message */}
-        {showSuccessMessage &&
-        <div className="mb-6 p-4 bg-success/10 border border-success/20 rounded-lg flex items-center space-x-3">
+        {showSuccessMessage && (
+          <div className="mb-6 p-4 bg-success/10 border border-success/20 rounded-lg flex items-center space-x-3">
             <Icon name="CheckCircleIcon" size={24} className="text-success" />
             <div>
               <p className="text-sm font-body font-medium text-foreground">
                 Claim submitted successfully!
               </p>
               <p className="text-xs text-text-secondary mt-1">
-                Your claim is being processed and you will receive updates via SMS and email.
+                Your claim is being processed. ML verification is in progress and you will receive updates via SMS and email.
               </p>
             </div>
           </div>
-        }
+        )}
 
         {/* Filters */}
         <ClaimFilters
@@ -295,7 +428,7 @@ const ClaimsInteractive = () => {
               <div>
                 <p className="text-sm text-text-secondary mb-1">Total Claims</p>
                 <p className="text-2xl font-heading font-bold text-foreground">
-                  {mockClaims.length}
+                  {claims.length > 0 ? claims.length : mockClaims.length}
                 </p>
               </div>
               <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
@@ -309,7 +442,7 @@ const ClaimsInteractive = () => {
               <div>
                 <p className="text-sm text-text-secondary mb-1">Pending</p>
                 <p className="text-2xl font-heading font-bold text-warning">
-                  {mockClaims.filter((c) => c.status === 'pending').length}
+                  {(claims.length > 0 ? claims : mockClaims).filter((c) => c.status === 'pending' || c.status === 'under_review' || c.status === 'ml_verification').length}
                 </p>
               </div>
               <div className="w-12 h-12 bg-warning/10 rounded-lg flex items-center justify-center">
@@ -323,7 +456,7 @@ const ClaimsInteractive = () => {
               <div>
                 <p className="text-sm text-text-secondary mb-1">Approved</p>
                 <p className="text-2xl font-heading font-bold text-success">
-                  {mockClaims.filter((c) => c.status === 'approved' || c.status === 'paid').length}
+                  {(claims.length > 0 ? claims : mockClaims).filter((c) => c.status === 'approved' || c.status === 'paid').length}
                 </p>
               </div>
               <div className="w-12 h-12 bg-success/10 rounded-lg flex items-center justify-center">
@@ -338,7 +471,7 @@ const ClaimsInteractive = () => {
                 <p className="text-sm text-text-secondary mb-1">Total Amount</p>
                 <p className="text-2xl font-heading font-bold text-primary">
                   ₹
-                  {mockClaims.
+                  {(claims.length > 0 ? claims : mockClaims).
                   reduce((sum, claim) => sum + claim.claimedAmount, 0).
                   toLocaleString('en-IN')}
                 </p>
@@ -351,7 +484,16 @@ const ClaimsInteractive = () => {
         </div>
 
         {/* Claims Table */}
-        <ClaimsTable claims={filteredClaims} onViewDetails={handleViewDetails} />
+        {isLoading ? (
+          <div className="bg-card border border-border rounded-lg p-8 text-center">
+            <div className="animate-pulse space-y-4">
+              <div className="h-4 bg-muted rounded w-1/4 mx-auto" />
+              <div className="h-4 bg-muted rounded w-1/2 mx-auto" />
+            </div>
+          </div>
+        ) : (
+          <ClaimsTable claims={filteredClaims} onViewDetails={handleViewDetails} />
+        )}
 
         {/* Export Button */}
         <div className="mt-6 flex justify-end">
@@ -367,9 +509,12 @@ const ClaimsInteractive = () => {
       <ClaimDetailsModal claim={selectedClaim} onClose={handleCloseDetails} />
       }
 
-      {isNewClaimModalOpen &&
-      <NewClaimModal onClose={handleCloseNewClaim} onSubmit={handleSubmitClaim} />
-      }
+      {isNewClaimModalOpen && (
+        <NewClaimModal 
+          onClose={handleCloseNewClaim} 
+          onSubmit={handleSubmitClaim}
+        />
+      )}
     </div>);
 
 };

@@ -11,6 +11,7 @@ const { uploadMultiple, handleUploadError } = require('../middleware/upload.midd
 const { validateClaim } = require('../middleware/validation.middleware');
 
 // Submit new claim (protected, with file upload)
+// Note: validateClaim runs AFTER uploadMultiple so FormData fields are available in req.body
 router.post(
   '/',
   verifyToken,
@@ -18,7 +19,7 @@ router.post(
   requireEmailVerified,
   uploadMultiple,
   handleUploadError,
-  validateClaim,
+  validateClaim, // Validation happens after multer processes FormData
   claimController.submitClaim
 );
 
