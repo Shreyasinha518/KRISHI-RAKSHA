@@ -159,17 +159,32 @@ class MLService {
       // Handle both old claim format and new frontend format
       const payload = {
         crop_type: data.crop_type || data.cropType,
-        land_size_acres: data.land_size_acres || data.landAreaValue || 5,
-        sowing_date: data.sowing_date || data.sowingDate,
+        land_size: data.land_size_acres || data.landAreaValue || 5,
+        sowing_date: data.sowing_date || data.sowingDate || null,
         soil_type: data.soil_type || data.soilType || 'loamy',
         irrigation_type: data.irrigation_type || data.irrigationType || 'canal',
         fertilizer_usage: data.fertilizer_usage || data.fertilizerUsage || 'moderate',
         weather_features: this.getWeatherFeatures(data.geo_location),
       };
 
-      console.log('🌾 Sending yield prediction request:', payload);
+      console.log('🌾 Sending yield prediction request to:', `${this.ML_API_URL}/api/v1/predict-yield`);
+      console.log('🌾 Payload:', payload);
 
-      const response = await axios.post(`${this.ML_API_URL}/api/v1/predict-yield`, payload);
+      // Add timeout and better error handling
+      const response = await axios.post(
+        `${this.ML_API_URL}/api/v1/predict-yield`, 
+        payload,
+        {
+          timeout: 10000, // 10 second timeout
+          validateStatus: function (status) {
+            return status < 500; // Don't throw for 4xx errors
+          }
+        }
+      );
+      
+      if (response.status >= 400) {
+        throw new Error(`ML API returned ${response.status}: ${response.statusText}`);
+      }
       
       const result = response.data;
       console.log('✅ Yield prediction response:', result);
@@ -180,7 +195,11 @@ class MLService {
         confidence: result.confidence || 0.78,
       };
     } catch (error) {
-      console.error('❌ Yield prediction API failed:', error.message);
+      console.error('❌ Yield prediction API failed:', {
+        message: error.message,
+        code: error.code,
+        response: error.response?.data,
+      });
       console.log('🔄 Using mock data for yield prediction');
       
       // Return mock data as fallback with more realistic values
@@ -192,15 +211,18 @@ class MLService {
         maize: 2500,
       };
       
-      const cropType = data.crop_type || data.cropType || 'rice';
+      const cropType = (data.crop_type || data.cropType || 'rice').toLowerCase();
       const landSize = parseFloat(data.land_size_acres || data.landAreaValue || 5);
       const baseYieldPerAcre = baseYield[cropType] || 2500;
       
-      return {
+      const mockPrediction = {
         predictedYield: Math.round(baseYieldPerAcre * landSize * (0.8 + Math.random() * 0.4)),
         predictedDamage: Math.random() * 20, // 0-20% damage
         confidence: 0.75 + Math.random() * 0.2, // 75-95% confidence
       };
+      
+      console.log('🔄 Mock prediction:', mockPrediction);
+      return mockPrediction;
     }
   }
 
