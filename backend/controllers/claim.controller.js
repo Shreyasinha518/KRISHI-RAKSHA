@@ -143,6 +143,13 @@ class ClaimController {
         try {
           const fullClaim = await ClaimModel.findById(claim.id);
           const mlResult = await MLService.verifyClaim(fullClaim);
+          
+          // Check if ML result contains mock data warning
+          if (mlResult.isMockData || mlResult.mlServiceAvailable === false) {
+            console.warn('⚠️ ML verification used mock/estimated data for claim:', claim.id);
+            console.warn('   ML service is unavailable. Results are estimates only.');
+          }
+          
           await ClaimModel.updateMLVerification(claim.id, mlResult);
 
           // If approved, update blockchain
@@ -160,6 +167,7 @@ class ClaimController {
           }
         } catch (mlError) {
           console.error('ML processing error:', mlError);
+          console.error('⚠️ ML verification failed completely. Claim will remain in pending status.');
         }
       });
 
@@ -301,11 +309,22 @@ class ClaimController {
         }
       }
 
-      res.json({
+      // Check if ML result used mock data
+      const response = {
         success: true,
         message: mlResult.approved ? 'Claim approved' : 'Claim rejected',
         mlResult,
-      });
+      };
+
+      if (mlResult.isMockData || mlResult.mlServiceAvailable === false) {
+        response.warning = '⚠️ ML verification used estimated/mock data. ML service is unavailable.';
+        response.mlServiceStatus = {
+          available: false,
+          note: 'Real ML verification requires the ML service to be running.',
+        };
+      }
+
+      res.json(response);
     } catch (error) {
       console.error('Process claim error:', error);
       res.status(500).json({ error: error.message });

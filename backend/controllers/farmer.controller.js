@@ -156,7 +156,9 @@ class FarmerController {
         // Continue without failing the request - prediction is more important
       }
 
-      res.json({
+      // Check if this is mock data and add warnings
+      const isMockData = prediction.isMockData === true;
+      const response = {
         success: true,
         prediction: {
           predictedYield: prediction.predictedYield || 0,
@@ -168,7 +170,28 @@ class FarmerController {
             'Schedule a field scout within 7-10 days for pest checks',
           ],
         },
-      });
+      };
+
+      // Add warnings if using mock data
+      if (isMockData) {
+        response.warning = prediction.warning || '⚠️ This prediction uses estimated/mock data. ML service is unavailable.';
+        response.mlServiceStatus = {
+          available: false,
+          error: prediction.mlServiceError || 'Unknown error',
+          status: prediction.mlServiceStatus || 'UNKNOWN',
+          url: prediction.mlServiceUrl || 'Not configured',
+        };
+        response.note = prediction.note || 'Real ML predictions require the ML service to be running.';
+        console.warn('⚠️ Returning mock prediction data to user. ML service unavailable.');
+      } else {
+        response.mlServiceStatus = {
+          available: true,
+          url: prediction.mlServiceUrl || 'Not configured',
+        };
+        response.note = prediction.note || '✅ Real ML prediction data.';
+      }
+
+      res.json(response);
     } catch (error) {
       console.error('Predict yield error:', error);
       res.status(500).json({ error: error.message });
